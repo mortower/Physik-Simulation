@@ -1,271 +1,1833 @@
 <!doctype html>
-<html lang="de">
+<html lang="de" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Physik Simulation</title>
+    <meta name="theme-color" content="#0b1220" />
+    <title>Physik-Simulation – Formellabor</title>
     <style>
       :root {
-        --bg: #0f172a;
-        --text: #e5e7eb;
-        --muted: #94a3b8;
-        --accent: #38bdf8;
-        --accent-2: #22c55e;
+        color-scheme: dark;
+        --bg: #0b1220;
+        --panel: #111c2e;
+        --panel-raised: #17243a;
+        --input-bg: #0b1423;
+        --line: #2a3a53;
+        --text: #e8eef8;
+        --muted: #9eacc2;
+        --accent: #55c2ff;
+        --accent-dark: #082438;
+        --danger: #ff9a9a;
+        --success: #8de0ad;
+        --chart-bg: #0a1321;
+        --chart-grid: #27374e;
+        --chart-axis: #8192a9;
+        --chart-label: #9eacc2;
+        --chart-text: #c6d1df;
+        --chart-error: #ff9a9a;
+      }
+
+      :root[data-theme="light"] {
+        color-scheme: light;
+        --bg: #edf2f7;
+        --panel: #fff;
+        --panel-raised: #e7edf4;
+        --input-bg: #fff;
+        --line: #c6d1df;
+        --text: #172335;
+        --muted: #596b80;
+        --accent: #087cad;
+        --accent-dark: #fff;
+        --danger: #a32020;
+        --success: #176b3a;
+        --chart-bg: #fff;
+        --chart-grid: #dce3eb;
+        --chart-axis: #526377;
+        --chart-label: #526377;
+        --chart-text: #26364a;
+        --chart-error: #a32020;
       }
 
       * { box-sizing: border-box; }
 
       body {
         margin: 0;
-        font-family: Arial, sans-serif;
-        background: linear-gradient(135deg, #0f172a, #111827 50%, #0b1120);
+        background: var(--bg);
         color: var(--text);
-        line-height: 1.6;
+        font: 16px/1.55 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       }
 
-      .container {
-        width: min(1100px, calc(100% - 32px));
-        margin: 0 auto;
+      :root[data-theme="light"] header { border-bottom-color: var(--line); }
+      :root[data-theme="light"] .button:hover { border-color: #9aabba; background: #d7e1eb; }
+      :root[data-theme="light"] .button-primary:hover { border-color: #006994; background: #006994; color: #fff; }
+
+      button, input, textarea, select { font: inherit; }
+      button, a, input, textarea, select { accent-color: var(--accent); }
+      button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
+        outline: 3px solid rgba(85, 194, 255, .6);
+        outline-offset: 2px;
       }
 
-      header {
-        padding: 22px 0;
-        border-bottom: 1px solid rgba(255,255,255,.08);
-      }
+      .container { width: min(1320px, calc(100% - 36px)); margin: 0 auto; }
+      header { border-bottom: 1px solid rgba(255,255,255,.08); }
+      nav { min-height: 68px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+      .brand { color: var(--text); font-weight: 750; letter-spacing: .02em; text-decoration: none; }
+      .nav-tools { display: flex; align-items: center; gap: 24px; }
+      .nav-links { display: flex; gap: 22px; }
+      .nav-links a { color: var(--muted); text-decoration: none; }
+      .nav-links a:hover { color: var(--text); }
+      .theme-control { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: .82rem; white-space: nowrap; }
+      .theme-control input { width: 42px; margin: 0; cursor: pointer; }
 
-      nav {
-        display: flex;
-        justify-content: space-between;
+      .intro { padding: 46px 0 26px; }
+      .eyebrow { color: var(--accent); font-size: .78rem; font-weight: 750; letter-spacing: .14em; text-transform: uppercase; }
+      h1 { margin: 6px 0 8px; font-size: clamp(2rem, 4vw, 3.2rem); line-height: 1.12; }
+      .intro p { max-width: 760px; margin: 0; color: var(--muted); }
+
+      .workspace { display: grid; grid-template-columns: minmax(310px, .85fr) minmax(0, 1.6fr); gap: 20px; align-items: start; padding: 10px 0 46px; }
+      .panel { min-width: 0; border: 1px solid var(--line); border-radius: 16px; background: var(--panel); box-shadow: 0 18px 50px rgba(0,0,0,.18); }
+      .controls-panel { padding: 22px; }
+      .panel-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
+      .panel-heading h2, .chart-heading h2 { margin: 0; font-size: 1.18rem; }
+      .panel-heading p { margin: 3px 0 0; color: var(--muted); font-size: .88rem; }
+      .field { margin: 18px 0; }
+      .field > label, .field-label { display: block; margin-bottom: 7px; font-size: .9rem; font-weight: 700; }
+      .help { margin: 6px 0 0; color: var(--muted); font-size: .8rem; }
+      textarea, input[type="number"], .start-value-field input, select {
+        width: 100%;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--input-bg);
+        color: var(--text);
+      }
+      textarea { min-height: 280px; padding: 12px; resize: vertical; font: .9rem/1.55 ui-monospace, SFMono-Regular, Consolas, monospace; }
+      input[type="number"], .start-value-field input, select { min-height: 40px; padding: 7px 10px; }
+      .start-value-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; }
+      .start-value-field { min-width: 0; }
+      .start-value-field label { display: block; margin-bottom: 5px; color: var(--muted); font: .82rem ui-monospace, SFMono-Regular, Consolas, monospace; }
+      .start-value-field input { width: 100%; }
+      .empty-start-values { color: var(--muted); font-size: .88rem; }
+      .two-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+      .two-columns .field { margin: 0; }
+      .row-actions { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 20px; }
+      .button {
+        min-height: 40px;
+        display: inline-flex;
+        justify-content: center;
         align-items: center;
-        gap: 20px;
-      }
-
-      .brand {
-        font-size: 1.4rem;
-        font-weight: 700;
-      }
-
-      .nav-links {
-        display: flex;
-        gap: 24px;
-        flex-wrap: wrap;
-      }
-
-      .nav-links a {
-        color: var(--muted);
-        text-decoration: none;
-      }
-
-      .nav-links a:hover {
+        gap: 8px;
+        padding: 8px 13px;
+        border: 1px solid var(--line);
+        border-radius: 9px;
+        background: var(--panel-raised);
         color: var(--text);
-      }
-
-      .hero {
-        padding: 80px 0 60px;
-      }
-
-      .hero-grid {
-        display: grid;
-        grid-template-columns: 1.2fr 0.8fr;
-        gap: 32px;
-        align-items: center;
-      }
-
-      h1 {
-        font-size: clamp(2.5rem, 5vw, 4rem);
-        line-height: 1.1;
-        margin: 0 0 18px;
-      }
-
-      .lead {
-        color: var(--muted);
-        font-size: 1.08rem;
-        max-width: 620px;
-      }
-
-      .cta-row {
-        margin-top: 28px;
-        display: flex;
-        gap: 14px;
-        flex-wrap: wrap;
-      }
-
-      .btn {
-        display: inline-block;
-        padding: 14px 22px;
-        border-radius: 10px;
-        text-decoration: none;
         font-weight: 700;
+        cursor: pointer;
+      }
+      .button:hover { border-color: #52708f; background: #1d304b; }
+      .button-primary { border-color: var(--accent); background: var(--accent); color: var(--accent-dark); }
+      .button-primary:hover { background: #86d5ff; }
+      .button-small { min-height: 34px; padding: 5px 10px; font-size: .85rem; }
+      .run-button { width: 100%; min-height: 46px; margin-top: 16px; font-size: 1rem; }
+      .status { min-height: 24px; margin: 12px 0 0; color: var(--muted); font-size: .88rem; }
+      .status[data-kind="error"] { color: var(--danger); }
+      .status[data-kind="success"] { color: var(--success); }
+      .hidden-file { display: none; }
+
+      .chart-panel { padding: 22px; }
+      .chart-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 14px; }
+      .chart-heading p { margin: 4px 0 0; color: var(--muted); font-size: .86rem; }
+      #chart-status { min-height: 0; margin-top: 4px; }
+      .chart-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+      .chart-wrap { position: relative; width: 100%; overflow: hidden; border: 1px solid var(--line); border-radius: 10px; background: var(--chart-bg); }
+      canvas { display: block; width: 100%; height: 410px; }
+      .chart-point-marker { position: absolute; z-index: 2; width: 14px; height: 14px; border: 3px solid #fff; border-radius: 50%; box-shadow: 0 0 0 2px var(--marker-color); transform: translate(-50%, -50%); pointer-events: none; }
+      .chart-tooltip { position: absolute; z-index: 3; max-width: 230px; padding: 8px 10px; border: 1px solid var(--line); border-left: 4px solid var(--tooltip-color); border-radius: 7px; background: var(--panel); color: var(--text); box-shadow: 0 5px 18px rgba(0,0,0,.24); font: .78rem/1.45 ui-monospace, SFMono-Regular, Consolas, monospace; white-space: pre-line; pointer-events: none; }
+      .legend { display: flex; flex-wrap: wrap; gap: 8px 20px; min-height: 28px; padding: 4px 4px 2px; color: var(--muted); font-size: .85rem; }
+      .legend-item { display: inline-flex; align-items: center; gap: 8px; }
+      .legend-swatch { width: 18px; height: 3px; border-radius: 3px; }
+      .table-panel { margin-top: 14px; padding: 14px; border: 1px solid var(--line); border-radius: 11px; background: var(--panel); }
+      .table-panel[hidden], .chart-tooltip[hidden], .chart-point-marker[hidden] { display: none; }
+      .table-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+      .table-toolbar h3 { margin: 0; font-size: .98rem; }
+      .table-controls { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: .82rem; }
+      .table-scroll { max-height: 340px; overflow: auto; border: 1px solid var(--line); border-radius: 7px; }
+      .data-table { width: 100%; border-collapse: collapse; font: .8rem ui-monospace, SFMono-Regular, Consolas, monospace; white-space: nowrap; }
+      .data-table th, .data-table td { padding: 7px 10px; border-bottom: 1px solid var(--line); text-align: right; }
+      .data-table th { position: sticky; top: 0; background: var(--panel-raised); color: var(--text); }
+      .data-table tr:last-child td { border-bottom: 0; }
+      .chart-config { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(245px, .8fr); gap: 18px; margin-top: 22px; }
+      .config-block { min-width: 0; padding: 15px; border: 1px solid var(--line); border-radius: 11px; background: rgba(255,255,255,.02); }
+      .config-block h3 { margin: 0 0 12px; font-size: .98rem; }
+      .series-list { display: grid; gap: 9px; }
+      .config-block[aria-labelledby="graphs-title"] { display: flex; flex-direction: column; }
+      .x-axis-choice { max-width: 260px; margin-bottom: 14px; }
+      .x-axis-choice label { display: block; margin-bottom: 5px; color: var(--text); font-size: .88rem; font-weight: 700; }
+      .y-axis-heading { margin: 0 0 8px; font-size: .88rem; }
+      .series-row { display: grid; grid-template-columns: minmax(0, 1fr) 58px 36px; gap: 8px; align-items: center; }
+      .series-row select { min-width: 0; }
+      .series-row input[type="color"] { width: 48px; height: 38px; padding: 3px; border: 1px solid var(--line); border-radius: 8px; background: var(--input-bg); cursor: pointer; }
+      .remove-series { width: 36px; height: 36px; border: 1px solid var(--line); border-radius: 8px; background: transparent; color: var(--muted); cursor: pointer; }
+      .remove-series:disabled { opacity: .35; cursor: not-allowed; }
+      .add-series { margin-top: 10px; }
+      .axis-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+      .axis-control { display: grid; gap: 8px; }
+      .axis-control h4 { margin: 0; font-size: .88rem; }
+      .range-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+      .range-fields input { min-width: 0; min-height: 46px; padding: 9px 10px; font-size: .95rem; }
+      .tick-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+      .tick-fields label { display: grid; gap: 4px; color: var(--muted); font-size: .78rem; }
+      .tick-fields input { min-width: 0; min-height: 42px; padding: 8px; font-size: .9rem; }
+      .check-row { display: flex; align-items: flex-start; gap: 9px; margin-top: 15px; }
+      .check-row input { width: 17px; height: 17px; flex: 0 0 auto; margin: 3px 0 0; }
+      .check-row label { font-size: .9rem; font-weight: 700; }
+      .check-row label small { margin-left: .35em; color: var(--muted); font-size: .75em; font-weight: 500; }
+      .reference-toggle { margin: auto 0 0; padding-top: 24px; color: var(--muted); }
+      .reference-toggle label { color: var(--muted); font-size: .82rem; font-weight: 500; }
+      .print-summary, .print-identification { display: none; }
+      footer { padding: 22px 0 26px; color: var(--muted); text-align: left; font-size: .82rem; }
+      .footer-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: start; gap: 12px; }
+      .footer-section { padding: 13px 15px; border: 1px solid var(--line); border-radius: 9px; background: var(--panel); }
+      .footer-section summary { color: var(--text); font-weight: 700; cursor: pointer; }
+      .footer-section p { margin: 10px 0 0; overflow-wrap: anywhere; }
+      footer a { color: var(--accent); }
+      .footer-license { margin: 14px 0 0; text-align: center; }
+
+      @media (max-width: 980px) {
+        .workspace { grid-template-columns: 1fr; }
+        .controls-panel { order: 1; }
+        .chart-panel { order: 2; }
       }
 
-      .btn-primary {
-        background: var(--accent);
-        color: #031827;
+      @media (max-width: 620px) {
+        .container { width: min(100% - 22px, 1320px); }
+        nav { min-height: 58px; flex-wrap: wrap; padding: 8px 0; }
+        .nav-tools { width: 100%; }
+        .nav-links { gap: 13px; font-size: .88rem; }
+        .nav-tools { flex-wrap: wrap; justify-content: space-between; gap: 10px; }
+        .intro { padding-top: 30px; }
+        .controls-panel, .chart-panel { padding: 15px; }
+        .chart-heading { flex-direction: column; }
+        .chart-actions { justify-content: flex-start; }
+        canvas { height: 330px; }
+        .chart-config { grid-template-columns: 1fr; }
+        .footer-grid { grid-template-columns: 1fr; }
+        .series-row { grid-template-columns: minmax(0, 1fr) 44px 34px; gap: 5px; }
+        .series-row input[type="color"] { width: 40px; }
+        .axis-grid { gap: 12px; }
+        .range-fields { grid-template-columns: 1fr; }
+        textarea { min-height: 230px; }
       }
 
-      .btn-secondary {
-        border: 1px solid rgba(255,255,255,.18);
-        color: var(--text);
-      }
-
-      .panel {
-        background: rgba(17,24,39,0.75);
-        border: 1px solid rgba(255,255,255,.08);
-        border-radius: 18px;
-        padding: 24px;
-        box-shadow: 0 18px 40px rgba(15, 23, 42, 0.35);
-      }
-
-      .simulation {
-        min-height: 260px;
-        display: grid;
-        place-items: center;
-        position: relative;
-        overflow: hidden;
-      }
-
-      .orbit {
-        position: absolute;
-        width: 220px;
-        height: 220px;
-        border: 2px dashed rgba(255,255,255,.3);
-        border-radius: 50%;
-      }
-
-      .orbit::before {
-        content: "";
-        position: absolute;
-        width: 16px;
-        height: 16px;
-        background: var(--accent-2);
-        border-radius: 50%;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%) translateX(110px);
-      }
-
-      .planet {
-        width: 160px;
-        height: 160px;
-        border-radius: 50%;
-        background: radial-gradient(circle at 30% 30%, #dbeafe, var(--accent) 35%, #0ea5e9 70%, #0369a1);
-        box-shadow: 0 0 38px rgba(56, 189, 248, 0.4);
-        animation: float 4.5s ease-in-out infinite;
-      }
-
-      @keyframes float {
-        0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-12px); }
-      }
-
-      .features {
-        padding: 30px 0 80px;
-      }
-
-      .features-grid {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(220px, 1fr));
-        gap: 24px;
-      }
-
-      .feature-card {
-        background: rgba(17,24,39,0.7);
-        border: 1px solid rgba(255,255,255,.08);
-        border-radius: 16px;
-        padding: 24px;
-      }
-
-      .feature-card h3 {
-        margin-top: 0;
-        margin-bottom: 10px;
-      }
-
-      .feature-card p {
-        color: var(--muted);
-        margin: 0;
-      }
-
-      footer {
-        padding: 24px 0 48px;
-        color: var(--muted);
-        text-align: center;
-      }
-
-      @media (max-width: 760px) {
-        .hero-grid,
-        .features-grid {
-          grid-template-columns: 1fr;
+      @media print {
+        @page {
+          margin: 12mm;
+          @top-left { content: ""; }
+          @top-center { content: ""; }
+          @top-right { content: ""; }
+          @bottom-left { content: ""; }
+          @bottom-center { content: ""; }
+          @bottom-right { content: ""; }
         }
-
-        nav {
-          flex-direction: column;
-          align-items: flex-start;
-        }
+        :root { color-scheme: light; }
+        body { background: #fff !important; color: #000; font-size: 10pt; }
+        header, .intro, .controls-panel, .chart-actions, .chart-config, .table-panel, .chart-tooltip, .chart-point-marker, footer, .footer-license { display: none !important; }
+        .container { width: 100%; }
+        .workspace { display: block; padding: 0; }
+        .chart-panel { border: 0; padding: 0; box-shadow: none; background: #fff !important; color: #000; }
+        .chart-heading { margin: 0 0 8px; }
+        .chart-heading h2 { color: #000; font-size: 16pt; }
+        .chart-heading p { color: #333; }
+        .chart-wrap { border: 1px solid #777; background: #fff; }
+        #chart-status { display: none; }
+        .legend { color: #000; }
+        canvas { height: 390px; }
+        .print-summary { display: grid !important; visibility: visible !important; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px; page-break-inside: avoid; }
+        .print-summary section { border: 1px solid #777; border-radius: 5px; padding: 9px; }
+        .print-identification { display: block !important; margin: 0 0 10px; padding: 5px 0 10px; }
+        .print-identification p { display: grid; grid-template-columns: auto 2fr auto 1fr auto 2fr auto 1.25fr; align-items: end; gap: 9px; margin: 0; }
+        .print-identification i, .print-identification time { display: block; min-width: 0; min-height: 20px; border-bottom: 1px solid #777; }
+        .print-identification time { white-space: nowrap; font-size: 9pt; }
+        .print-summary h3 { margin: 0 0 5px; font-size: 10pt; }
+        .print-summary pre, .print-summary p { color: #000; }
+        .print-summary pre { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; font: 8pt/1.35 ui-monospace, monospace; }
+        .print-summary p { margin: 0; white-space: pre-wrap; font: 8pt/1.4 ui-monospace, monospace; }
+        * { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
       }
     </style>
   </head>
   <body>
     <header>
       <div class="container">
-        <nav>
-          <div class="brand">Physik Simulation</div>
-          <div class="nav-links">
-            <a href="#start">Start</a>
-            <a href="#features">Features</a>
-            <a href="#kontakt">Kontakt</a>
+        <nav aria-label="Hauptnavigation">
+          <a class="brand" href="#start">Physik-Simulation</a>
+          <div class="nav-tools">
+            <div class="nav-links">
+              <a href="#labor">Formellabor</a>
+              <a href="#diagramm">Diagramm</a>
+            </div>
+            <label class="theme-control" for="theme-slider">
+              <span>Dark</span>
+              <input id="theme-slider" type="range" min="0" max="1" step="1" value="0" aria-label="Darstellung zwischen Darkmode und Normalmodus umschalten" />
+              <span>Normal</span>
+            </label>
           </div>
         </nav>
       </div>
     </header>
 
-    <main>
-      <section class="hero" id="start">
-        <div class="container hero-grid">
-          <div>
-            <h1>Bewegung, Kräfte und Energie verständlich machen.</h1>
-            <p class="lead">
-              Eine einfache Startseite für ein Physik-Projekt mit klarer Struktur,
-              moderner Gestaltung und leicht verständlichen Inhalten.
-            </p>
-            <div class="cta-row">
-              <a class="btn btn-primary" href="#features">Mehr erfahren</a>
-              <a class="btn btn-secondary" href="#kontakt">Kontakt</a>
+    <main class="container" id="start">
+      <section class="intro">
+        <div class="eyebrow">Physik zum Ausprobieren</div>
+        <h1>Das Formellabor</h1>
+        <p>Schreibe Bewegungsgleichungen, lege Startwerte und Zeitschritte fest und untersuche die Ergebnisse im Diagramm.</p>
+      </section>
+
+      <div class="workspace" id="labor">
+        <section class="panel controls-panel" aria-labelledby="program-heading">
+          <div class="panel-heading">
+            <div>
+              <h2 id="program-heading">Programm und Startwerte</h2>
             </div>
           </div>
 
-          <div class="panel simulation" aria-label="Visuelle Simulation">
-            <div class="orbit"></div>
-            <div class="planet"></div>
+          <div class="field">
+            <label for="program">Simulationscode</label>
+            <textarea id="program" spellcheck="false">ds = a/2 dt^2 + v * dt
+dv = a * dt
+
+s = s + ds
+v = v + dv
+t = t + dt</textarea>
           </div>
-        </div>
-      </section>
 
-      <section class="features" id="features">
-        <div class="container">
-          <div class="features-grid">
-            <article class="feature-card">
-              <h3>Mechanik</h3>
-              <p>Simulation von Bewegung, Geschwindigkeit, sowie Kräften und Beschleunigung.</p>
-            </article>
-
-            <article class="feature-card">
-              <h3>Elektrizität</h3>
-              <p>Einfach erklärtes Verständnis von Strom, Spannung und Schaltkreisen.</p>
-            </article>
-
-            <article class="feature-card">
-              <h3>Optik</h3>
-              <p>Interaktive Einblicke in Licht, Reflexion und Brechung.</p>
-            </article>
+          <div class="field">
+            <label for="start-values">Startwerte</label>
+            <div class="start-value-grid" id="start-values"></div>
           </div>
+
+          <div class="two-columns">
+            <div class="field">
+              <label for="iterations">Wiederholungen</label>
+              <input id="iterations" type="number" min="1" max="10000" step="1" value="1000" />
+            </div>
+          </div>
+
+          <button class="button button-primary run-button" id="run-button" type="button">▶ Simulation starten</button>
+          <p class="status" id="status" role="status" aria-live="polite">Passe Code oder Werte an und starte die Simulation.</p>
+
+          <div class="row-actions" aria-label="Programmdatei und Druck">
+            <button class="button button-small" id="export-button" type="button">Programm exportieren</button>
+            <button class="button button-small" id="import-button" type="button">Programm importieren</button>
+            <button class="button button-small" id="print-button" type="button">Drucken</button>
+            <input class="hidden-file" id="import-file" type="file" accept=".json,application/json" />
+          </div>
+        </section>
+
+        <div class="print-identification">
+          <p><span>Name:</span><i></i><span>Kurs:</span><i></i><span>Thema:</span><i></i><span>Datum/Uhrzeit:</span><time id="print-datetime"></time></p>
         </div>
-      </section>
+        <section class="panel chart-panel" id="diagramm" aria-labelledby="chart-title">
+          <div class="chart-heading">
+            <div>
+              <h2 id="chart-title">Diagramm</h2>
+            </div>
+            <div class="chart-actions">
+              <button class="button button-small" id="table-toggle" type="button" aria-expanded="false" aria-controls="table-panel">Tabelle</button>
+              <button class="button button-small" id="chart-print-button" type="button">Diagramm drucken</button>
+            </div>
+          </div>
+
+          <div class="chart-wrap">
+            <canvas id="chart" role="img" aria-label="Diagramm der Simulationsergebnisse. Mit dem Mausrad zoomen."></canvas>
+            <div class="chart-point-marker" id="chart-point-marker" hidden></div>
+            <div class="chart-tooltip" id="chart-tooltip" role="tooltip" hidden></div>
+          </div>
+          <p class="status" id="chart-status" role="status" aria-live="polite"></p>
+          <div class="legend" id="legend" aria-label="Legende"></div>
+
+          <section class="table-panel" id="table-panel" aria-labelledby="table-title" hidden>
+            <div class="table-toolbar">
+              <h3 id="table-title">Wertetabelle</h3>
+              <div class="table-controls">
+                <button class="button button-small" id="table-previous" type="button">Zurück</button>
+                <span id="table-page" aria-live="polite"></span>
+                <button class="button button-small" id="table-next" type="button">Weiter</button>
+              </div>
+            </div>
+            <div class="table-scroll">
+              <table class="data-table">
+                <thead id="table-head"></thead>
+                <tbody id="table-body"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <div class="chart-config">
+            <section class="config-block" aria-labelledby="graphs-title">
+              <h3 id="graphs-title">Graphen</h3>
+              <div class="x-axis-choice">
+                <label for="x-variable">x-Achse</label>
+                <select id="x-variable" aria-label="x-Achse"></select>
+              </div>
+              <h4 class="y-axis-heading">y-Achse</h4>
+              <div class="series-list" id="series-list"></div>
+              <button class="button button-small add-series" id="add-series" type="button">+ Graph hinzufügen</button>
+              <div class="check-row reference-toggle">
+                <input id="show-reference" type="checkbox" />
+                <label for="show-reference">Referenzkurve <small>Alpha-Testphase</small></label>
+              </div>
+            </section>
+
+            <section class="config-block" aria-labelledby="axes-title">
+              <h3 id="axes-title">Skalierung</h3>
+              <div class="axis-grid">
+                <div class="axis-control">
+                  <h4>x-Achse</h4>
+                  <select id="x-mode" aria-label="Skalierung der x-Achse">
+                    <option value="auto">Automatisch</option>
+                    <option value="manual">Manuell</option>
+                  </select>
+                  <div class="range-fields">
+                    <input id="x-min" type="number" step="any" aria-label="x-Achse Minimum" placeholder="Minimum" />
+                    <input id="x-max" type="number" step="any" aria-label="x-Achse Maximum" placeholder="Maximum" />
+                  </div>
+                  <div class="tick-fields">
+                    <label for="x-tick-step">Hauptstrich-Abstand
+                      <input id="x-tick-step" type="number" step="any" aria-label="Abstand der Hauptstriche auf der x-Achse" placeholder="Automatisch" />
+                    </label>
+                    <label for="x-subdivisions">Teilungen je Abschnitt
+                      <input id="x-subdivisions" type="number" min="1" max="20" step="1" value="1" aria-label="Teilungen je Abschnitt auf der x-Achse" />
+                    </label>
+                  </div>
+                </div>
+                <div class="axis-control">
+                  <h4>y-Achse</h4>
+                  <select id="y-mode" aria-label="Skalierung der y-Achse">
+                    <option value="auto">Automatisch</option>
+                    <option value="manual">Manuell</option>
+                  </select>
+                  <div class="range-fields">
+                    <input id="y-min" type="number" step="any" aria-label="y-Achse Minimum" placeholder="Minimum" />
+                    <input id="y-max" type="number" step="any" aria-label="y-Achse Maximum" placeholder="Maximum" />
+                  </div>
+                  <div class="tick-fields">
+                    <label for="y-tick-step">Hauptstrich-Abstand
+                      <input id="y-tick-step" type="number" step="any" aria-label="Abstand der Hauptstriche auf der y-Achse" placeholder="Automatisch" />
+                    </label>
+                    <label for="y-subdivisions">Teilungen je Abschnitt
+                      <input id="y-subdivisions" type="number" min="1" max="20" step="1" value="1" aria-label="Teilungen je Abschnitt auf der y-Achse" />
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+          <div class="print-summary">
+            <section>
+              <h3>Simulationscode</h3>
+              <pre id="print-code"></pre>
+            </section>
+            <section>
+              <h3>Startwerte und Einstellungen</h3>
+              <p id="print-values"></p>
+            </section>
+          </div>
+        </section>
+      </div>
     </main>
 
-    <footer id="kontakt">
-      <div class="container">
-        © 2026 Physik Simulation · Beispielseite für dein Projekt
+    <footer class="container">
+      <div class="footer-grid">
+        <details class="footer-section">
+          <summary>Impressum</summary>
+          <p>
+            Anbieter: Moritz Thauer<br>
+            Lößnitzgymnasium Radebeul<br>
+            Steinbachstraße 21<br>
+            01445 Radebeul<br>
+            E-Mail: <a href="mailto:moritz.thauer@loegy.lernsax.de">moritz.thauer@loegy.lernsax.de</a>
+          </p>
+        </details>
+
+        <details class="footer-section">
+          <summary>Datenschutzhinweise</summary>
+          <p>
+            Diese Seite speichert keine personenbezogenen Daten. Es werden lediglich technische Zugriffsdaten (z. B. IP-Adresse, Browser-Typ) vom Hosting-Provider (GitHub Pages) im Rahmen des Betriebs protokolliert. Weitere Informationen findest du in der <a href="https://docs.github.com/de/site-policy/privacy-policies/github-privacy-statement" target="_blank" rel="noopener noreferrer">GitHub Privacy Statement</a>.
+          </p>
+        </details>
+
+        <details class="footer-section">
+          <summary>Haftungsausschluss</summary>
+          <p>
+            Alle Inhalte wurden mit größter Sorgfalt erstellt. Für die Richtigkeit, Vollständigkeit und Aktualität der Inhalte wird jedoch keine Gewähr übernommen. Die Nutzung der Inhalte erfolgt auf eigene Verantwortung.
+          </p>
+        </details>
       </div>
+      <p class="footer-license">Diese Seite steht unter der <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.de" target="_blank" rel="noopener noreferrer">Creative-Commons-Lizenz CC BY-SA 4.0</a>.</p>
     </footer>
+
+    <script>
+      const $ = (selector) => document.querySelector(selector);
+      const programInput = $("#program");
+      const startValuesContainer = $("#start-values");
+      const seriesList = $("#series-list");
+      const canvas = $("#chart");
+      const context = canvas.getContext("2d");
+      const colorPalette = ["#55c2ff", "#ff8f70", "#a88bff", "#59d99d", "#ffd166", "#ff70b8"];
+      let simulationRows = [];
+      let chartHitTargets = [];
+      let chartPlotBounds = null;
+      let chartBaseRanges = null;
+      let chartZoom = { scale: 1, centerX: 0.5, centerY: 0.5 };
+      let chartPan = null;
+      let tablePage = 0;
+      let documentTitleBeforePrint = "";
+      let referenceCurveCache = new Map();
+      let startingValues = {};
+      let startValueDrafts = new Map([["a", "1"], ["m", "1"], ["dt", "1"], ["v", "0"], ["s", "0"], ["t", "0"]]);
+      let graphId = 0;
+      let printMode = false;
+
+      function setStatus(message, kind = "") {
+        const status = $("#status");
+        status.textContent = message;
+        status.dataset.kind = kind;
+      }
+
+      function tokenize(expression, lineNumber) {
+        const tokens = [];
+        const normalizedExpression = expression.replace(/(\d),(\d)/g, "$1.$2");
+        const tokenPattern = /\s*(?:(\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?|([A-Za-z_][A-Za-z0-9_]*)|(<=|>=|==|!=|[+\-*/^()<>=]))/y;
+        let position = 0;
+
+        while (position < normalizedExpression.length) {
+          tokenPattern.lastIndex = position;
+          const match = tokenPattern.exec(normalizedExpression);
+          if (!match) {
+            if (/^\s*$/.test(normalizedExpression.slice(position))) break;
+            throw new Error(`Zeile ${lineNumber}: Ungültiges Zeichen „${normalizedExpression[position]}“ in der Formel.`);
+          }
+          const value = match[0].trim();
+          tokens.push({
+            type: match[1] !== undefined ? "number" : match[2] !== undefined ? "name" : "operator",
+            value: match[1] !== undefined ? value : match[2] !== undefined ? match[2] : match[3]
+          });
+          position = tokenPattern.lastIndex;
+        }
+
+        tokens.push({ type: "end", value: "" });
+        return tokens;
+      }
+
+      function parseExpression(expression, lineNumber) {
+        const tokens = tokenize(expression, lineNumber);
+        let index = 0;
+        const current = () => tokens[index];
+        const take = (value) => {
+          if (current().value !== value) return false;
+          index += 1;
+          return true;
+        };
+        const primaryStarts = () => current().type === "number" || current().type === "name" || current().value === "(";
+
+        function parsePrimary() {
+          const token = current();
+          if (token.type === "number") {
+            index += 1;
+            return { type: "number", value: Number(token.value) };
+          }
+          if (token.type === "name") {
+            index += 1;
+            if (token.value === "pi") return { type: "constant", value: Math.PI };
+            if (token.value === "e") return { type: "constant", value: Math.E };
+            if (["sin", "cos", "tan", "sqrt"].includes(token.value)) {
+              if (!take("(")) throw new Error(`Zeile ${lineNumber}: Die Funktion ${token.value} benötigt Klammern, zum Beispiel ${token.value}(x).`);
+              const argument = parseAdditive();
+              if (!take(")")) throw new Error(`Zeile ${lineNumber}: Eine Klammer der Funktion ${token.value} wird nicht geschlossen.`);
+              return { type: "function", name: token.value, argument };
+            }
+            return { type: "variable", name: token.value };
+          }
+          if (take("(")) {
+            const node = parseComparison();
+            if (!take(")")) throw new Error(`Zeile ${lineNumber}: Eine Klammer wird nicht geschlossen.`);
+            return node;
+          }
+          throw new Error(`Zeile ${lineNumber}: Hier fehlt eine Zahl, Variable oder Klammer.`);
+        }
+
+        function parsePower() {
+          const left = parsePrimary();
+          if (!take("^")) return left;
+          return { type: "binary", operator: "^", left, right: parseUnary() };
+        }
+
+        function parseUnary() {
+          if (take("+")) return { type: "unary", operator: "+", value: parseUnary() };
+          if (take("-")) return { type: "unary", operator: "-", value: parseUnary() };
+          return parsePower();
+        }
+
+        function parseMultiplicative() {
+          let node = parseUnary();
+          while (true) {
+            let operator = "";
+            if (take("*")) operator = "*";
+            else if (take("/")) operator = "/";
+            else if (primaryStarts()) operator = "*";
+            else break;
+            node = { type: "binary", operator, left: node, right: parseUnary() };
+          }
+          return node;
+        }
+
+        function parseAdditive() {
+          let node = parseMultiplicative();
+          while (current().value === "+" || current().value === "-") {
+            const operator = current().value;
+            index += 1;
+            node = { type: "binary", operator, left: node, right: parseMultiplicative() };
+          }
+          return node;
+        }
+
+        function parseComparison() {
+          const left = parseAdditive();
+          if (!["<", "<=", ">", ">=", "=", "==", "!="].includes(current().value)) return left;
+          const operator = current().value;
+          index += 1;
+          return { type: "comparison", operator, left, right: parseAdditive() };
+        }
+
+        const tree = parseComparison();
+        if (current().type !== "end") {
+          throw new Error(`Zeile ${lineNumber}: Unerwarteter Ausdruck „${current().value}“.`);
+        }
+        return tree;
+      }
+
+      function parseProgram(programText = programInput.value) {
+        const assignments = [];
+        const names = new Set();
+        const assignedBefore = new Set();
+        const requiredStartValues = new Set();
+        const lines = programText.split(/\r?\n/);
+
+        lines.forEach((sourceLine, index) => {
+          const lineNumber = index + 1;
+          const line = sourceLine.replace(/#.*/, "").trim().replace(/;$/, "").trim();
+          if (!line) return;
+          const conditionalMatch = /^if\s+(.+?)\s+then\s+(.+)$/i.exec(line);
+          if (/^if\b/i.test(line) && !conditionalMatch) {
+            throw new Error(`Zeile ${lineNumber}: Eine Bedingung muss die Form „if Bedingung then Variable = Formel“ haben.`);
+          }
+          const assignmentText = conditionalMatch ? conditionalMatch[2] : line;
+          const match = /^([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.+)$/.exec(assignmentText);
+          if (!match) throw new Error(`Zeile ${lineNumber}: Erwartet wird eine Zuweisung wie „s = s + ds“.`);
+          const target = match[1];
+          const expression = parseExpression(match[2], lineNumber);
+          const condition = conditionalMatch ? parseExpression(conditionalMatch[1], lineNumber) : null;
+          const referenced = new Set();
+          collectVariables(expression, referenced);
+          if (condition) collectVariables(condition, referenced);
+          for (const name of referenced) {
+            if (!assignedBefore.has(name)) requiredStartValues.add(name);
+          }
+          assignments.push({ target, expression, condition, lineNumber });
+          names.add(target);
+          collectVariables(expression, names);
+          if (condition) collectVariables(condition, names);
+          else assignedBefore.add(target);
+        });
+
+        if (assignments.length === 0) throw new Error("Bitte gib mindestens eine Zuweisung ein.");
+        return { assignments, names, requiredStartValues };
+      }
+
+      function inferRequiredStartValues(programText) {
+        const assignedBefore = new Set();
+        const requiredStartValues = new Set();
+        const reservedNames = new Set(["sin", "cos", "tan", "sqrt", "pi", "e", "if", "then"]);
+
+        for (const sourceLine of programText.split(/\r?\n/)) {
+          const line = sourceLine.replace(/#.*/, "").trim();
+          if (!line) continue;
+
+          const conditional = /^if\s+(.+?)\s+then\s+(.+)$/i.exec(line);
+          const assignmentText = conditional ? conditional[2] : line;
+          const assignment = /^([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)$/.exec(assignmentText);
+          const expression = `${conditional ? `${conditional[1]} ` : ""}${assignment ? assignment[2] : assignmentText}`;
+          const withoutNumbers = expression.replace(/(?:\d+(?:[.,]\d*)?|[.,]\d+)(?:[eE][+-]?\d+)?/g, " ");
+          for (const match of withoutNumbers.matchAll(/\b[A-Za-z_][A-Za-z0-9_]*\b/g)) {
+            const name = match[0];
+            if (!reservedNames.has(name) && !assignedBefore.has(name)) requiredStartValues.add(name);
+          }
+          if (assignment && !conditional) assignedBefore.add(assignment[1]);
+        }
+
+        return requiredStartValues;
+      }
+
+      function collectVariables(node, names) {
+        if (node.type === "variable") names.add(node.name);
+        if (node.type === "unary") collectVariables(node.value, names);
+        if (node.type === "function") collectVariables(node.argument, names);
+        if (node.type === "binary") {
+          collectVariables(node.left, names);
+          collectVariables(node.right, names);
+        }
+        if (node.type === "comparison") {
+          collectVariables(node.left, names);
+          collectVariables(node.right, names);
+        }
+      }
+
+      function evaluate(node, values, lineNumber) {
+        if (node.type === "number") return node.value;
+        if (node.type === "constant") return node.value;
+        if (node.type === "variable") {
+          if (!Object.hasOwn(values, node.name)) {
+            throw new Error(`Zeile ${lineNumber}: Die Variable „${node.name}“ hat keinen Startwert und wurde vorher nicht berechnet.`);
+          }
+          return values[node.name];
+        }
+        if (node.type === "unary") {
+          const value = evaluate(node.value, values, lineNumber);
+          return node.operator === "-" ? -value : value;
+        }
+        if (node.type === "function") {
+          const argument = evaluate(node.argument, values, lineNumber);
+          return Math[node.name](argument);
+        }
+        const left = evaluate(node.left, values, lineNumber);
+        const right = evaluate(node.right, values, lineNumber);
+        if (node.type === "comparison") {
+          if (node.operator === "<") return left < right;
+          if (node.operator === "<=") return left <= right;
+          if (node.operator === ">") return left > right;
+          if (node.operator === ">=") return left >= right;
+          if (node.operator === "=" || node.operator === "==") return left === right;
+          return left !== right;
+        }
+        if (node.operator === "+") return left + right;
+        if (node.operator === "-") return left - right;
+        if (node.operator === "*") return left * right;
+        if (node.operator === "/") {
+          if (right === 0) throw new Error(`Zeile ${lineNumber}: Division durch null ist nicht möglich.`);
+          return left / right;
+        }
+        return left ** right;
+      }
+
+      function parseStartValueText(text) {
+        const values = {};
+        const lines = text.split(/\r?\n/);
+        lines.forEach((sourceLine, index) => {
+          const lineNumber = index + 1;
+          const line = sourceLine.replace(/#.*/, "").trim();
+          if (!line) return;
+          const match = /^([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.+)$/.exec(line);
+          if (!match) throw new Error(`Startwerte, Zeile ${lineNumber}: Erwartet wird zum Beispiel „a = 1“.`);
+          if (Object.hasOwn(values, match[1])) throw new Error(`Startwerte, Zeile ${lineNumber}: „${match[1]}“ ist doppelt angegeben.`);
+          const numberText = match[2].trim().replace(",", ".");
+          const value = Number(numberText);
+          if (!Number.isFinite(value)) throw new Error(`Startwerte, Zeile ${lineNumber}: „${match[2]}“ ist keine gültige Zahl.`);
+          values[match[1]] = value;
+        });
+        return values;
+      }
+
+      function serializeStartValues() {
+        return Array.from(startValuesContainer.querySelectorAll("input[data-variable]"))
+          .map((input) => `${input.dataset.variable} = ${input.value}`)
+          .join("\n");
+      }
+
+      function parseStartValues(requiredNames) {
+        const values = {};
+        for (const name of requiredNames) {
+          const input = Array.from(startValuesContainer.querySelectorAll("input[data-variable]"))
+            .find((candidate) => candidate.dataset.variable === name);
+          const text = input?.value.trim() ?? "";
+          if (!text) throw new Error(`Bitte gib einen Startwert für „${name}“ ein.`);
+          const value = Number(text.replace(",", "."));
+          if (!Number.isFinite(value)) throw new Error(`Der Startwert für „${name}“ muss eine gültige Zahl sein.`);
+          values[name] = value;
+        }
+        return values;
+      }
+
+      function getIterations() {
+        const value = Number($("#iterations").value);
+        if (!Number.isInteger(value) || value < 1 || value > 10000) {
+          throw new Error("Die Anzahl der Wiederholungen muss eine ganze Zahl zwischen 1 und 10.000 sein.");
+        }
+        return value;
+      }
+
+      function runSimulation() {
+        try {
+          const { assignments, requiredStartValues } = parseProgram();
+          const initial = parseStartValues(requiredStartValues);
+          const iterations = getIterations();
+          let values = { ...initial };
+          const rows = [{ ...values }];
+
+          for (let step = 0; step < iterations; step += 1) {
+            values = { ...values };
+            for (const assignment of assignments) {
+              if (assignment.condition && !evaluate(assignment.condition, values, assignment.lineNumber)) continue;
+              const result = evaluate(assignment.expression, values, assignment.lineNumber);
+              if (!Number.isFinite(result)) {
+                throw new Error(`Zeile ${assignment.lineNumber}: Die Berechnung für „${assignment.target}“ ist nicht endlich.`);
+              }
+              values[assignment.target] = result;
+            }
+            rows.push({ ...values });
+          }
+
+          simulationRows = rows;
+          referenceCurveCache.clear();
+          tablePage = 0;
+          startingValues = initial;
+          resetChartZoom();
+          refreshVariableOptions();
+          renderChart();
+          if (!$("#table-panel").hidden) renderTablePage();
+          updatePrintSummary();
+          setStatus(`Simulation erfolgreich: ${iterations} Schritte und ${rows.length} Messpunkte.`, "success");
+        } catch (error) {
+          simulationRows = [];
+          referenceCurveCache.clear();
+          chartHitTargets = [];
+          renderChart();
+          if (!$("#table-panel").hidden) renderTablePage();
+          setStatus(error.message || "Die Simulation konnte nicht ausgeführt werden.", "error");
+        }
+      }
+
+      function getGraphSettings() {
+        const x = $("#x-variable").value;
+        return Array.from(seriesList.querySelectorAll(".series-row")).map((row) => ({
+          x,
+          y: row.querySelector(".series-y").value,
+          color: row.querySelector('input[type="color"]').value
+        }));
+      }
+
+      function createSelect(className, ariaLabel) {
+        const select = document.createElement("select");
+        select.className = className;
+        select.setAttribute("aria-label", ariaLabel);
+        select.addEventListener("change", () => {
+          resetChartZoom();
+          renderChart();
+        });
+        return select;
+      }
+
+      function addGraph(settings = {}) {
+        if (seriesList.children.length >= 12) {
+          setStatus("Es können höchstens 12 Graphen gleichzeitig angezeigt werden.", "error");
+          return;
+        }
+        graphId += 1;
+        const row = document.createElement("div");
+        row.className = "series-row";
+        row.dataset.graphId = String(graphId);
+
+        const ySelect = createSelect("series-y", `Graph ${graphId}: Größe auf der y-Achse`);
+        ySelect.setAttribute("aria-label", `Graph ${graphId}: Größe auf der y-Achse`);
+        const color = document.createElement("input");
+        color.type = "color";
+        color.value = settings.color || colorPalette[(graphId - 1) % colorPalette.length];
+        color.setAttribute("aria-label", `Farbe für Graph ${graphId}`);
+        color.addEventListener("input", renderChart);
+
+        const remove = document.createElement("button");
+        remove.className = "remove-series";
+        remove.type = "button";
+        remove.textContent = "×";
+        remove.title = "Graph entfernen";
+        remove.setAttribute("aria-label", "Graph entfernen");
+        remove.addEventListener("click", () => {
+          if (seriesList.children.length <= 1) return;
+          row.remove();
+          resetChartZoom();
+          updateRemoveButtons();
+          renderChart();
+        });
+
+        row.append(ySelect, color, remove);
+        seriesList.append(row);
+        refreshVariableOptions();
+        if (settings.y) ySelect.value = settings.y;
+        updateRemoveButtons();
+        renderChart();
+      }
+
+      function refreshVariableOptions() {
+        let names = new Set(Object.keys(startingValues));
+        try {
+          for (const name of parseProgram().names) names.add(name);
+        } catch {
+          for (const match of programInput.value.matchAll(/\b[A-Za-z_][A-Za-z0-9_]*\b/g)) names.add(match[0]);
+        }
+        if (names.size === 0) names = new Set(["t", "s"]);
+
+        const xSelect = $("#x-variable");
+        const previousX = xSelect.value;
+        xSelect.replaceChildren();
+        for (const name of names) {
+          const option = document.createElement("option");
+          option.value = name;
+          option.textContent = name;
+          xSelect.append(option);
+        }
+        xSelect.value = names.has(previousX) ? previousX : names.has("t") ? "t" : names.values().next().value;
+
+        seriesList.querySelectorAll(".series-row").forEach((row) => {
+          const select = row.querySelector(".series-y");
+          const previous = select.value;
+          select.replaceChildren();
+          for (const name of names) {
+            const option = document.createElement("option");
+            option.value = name;
+            option.textContent = name;
+            select.append(option);
+          }
+          select.value = names.has(previous) ? previous : names.has("s") ? "s" : names.values().next().value;
+        });
+      }
+
+      function refreshStartValueFields() {
+        let requiredNames;
+        try {
+          requiredNames = parseProgram().requiredStartValues;
+        } catch {
+          requiredNames = inferRequiredStartValues(programInput.value);
+        }
+
+        for (const input of startValuesContainer.querySelectorAll("input[data-variable]")) {
+          startValueDrafts.set(input.dataset.variable, input.value);
+        }
+        startValuesContainer.replaceChildren();
+
+        if (requiredNames.size === 0) {
+          const message = document.createElement("span");
+          message.className = "empty-start-values";
+          message.textContent = "Für diesen Programmcode sind keine Startwerte erforderlich.";
+          startValuesContainer.append(message);
+          return;
+        }
+
+        for (const name of requiredNames) {
+          const field = document.createElement("div");
+          field.className = "start-value-field";
+          const label = document.createElement("label");
+          const input = document.createElement("input");
+          input.type = "text";
+          input.inputMode = "decimal";
+          input.id = `start-value-${name}`;
+          input.dataset.variable = name;
+          input.setAttribute("aria-label", `Startwert für ${name}`);
+          input.placeholder = "Wert";
+          const draft = startValueDrafts.get(name);
+          input.value = draft ?? (name === "a" || name === "m" || name === "dt" ? "1" : "0");
+          label.htmlFor = input.id;
+          label.textContent = name;
+          input.addEventListener("input", () => {
+            startValueDrafts.set(name, input.value);
+            updatePrintSummary();
+          });
+          input.addEventListener("change", runSimulation);
+          field.append(label, input);
+          startValuesContainer.append(field);
+        }
+      }
+
+      function updateRemoveButtons() {
+        const rows = Array.from(seriesList.querySelectorAll(".series-row"));
+        rows.forEach((row) => {
+          row.querySelector(".remove-series").disabled = rows.length <= 1;
+        });
+        $("#add-series").disabled = rows.length >= 12;
+      }
+
+      function getReferencePoints(graph) {
+        if (!$("#show-reference").checked) return [];
+        const cacheKey = JSON.stringify({
+          program: programInput.value,
+          startingValues,
+          iterationCount: simulationRows.length - 1,
+          timeStep: startingValues.dt ?? simulationRows[0]?.dt ?? simulationRows[1]?.dt ?? null
+        });
+        if (!referenceCurveCache.has(cacheKey)) {
+          referenceCurveCache.set(cacheKey, runReferenceSimulation());
+        }
+        return referenceCurveCache.get(cacheKey)
+          .filter((row) => Number.isFinite(row[graph.x]) && Number.isFinite(row[graph.y]))
+          .map((row) => ({ x: row[graph.x], y: row[graph.y] }));
+      }
+
+      function runReferenceSimulation() {
+        const { assignments } = parseProgram();
+        const iterationCount = simulationRows.length - 1;
+        const initialValues = simulationRows[0] || startingValues;
+        const timeStep = Number.isFinite(startingValues.dt)
+          ? startingValues.dt
+          : Number.isFinite(initialValues.dt) ? initialValues.dt : simulationRows[1]?.dt;
+        const hasTimeStep = (Number.isFinite(timeStep) && timeStep !== 0)
+          || assignments.some((assignment) => assignment.target === "dt");
+        const maxReferenceWork = 1_000_000;
+        const maxSubstepsPerIteration = 10_000;
+        const maxReferencePoints = 10_000;
+        const substeps = hasTimeStep
+          ? Math.min(
+            maxSubstepsPerIteration,
+            Math.max(1, Math.floor(maxReferenceWork / Math.max(1, iterationCount)))
+          )
+          : 1;
+        const outputStride = Math.max(1, Math.ceil(iterationCount * substeps / (maxReferencePoints - 1)));
+        const rows = [{ ...initialValues }];
+        let values = { ...initialValues };
+        let completedSubsteps = 0;
+
+        for (let iteration = 0; iteration < iterationCount; iteration += 1) {
+          const rowStep = simulationRows[iteration]?.dt;
+          const coarseStep = Number.isFinite(rowStep) && rowStep !== 0 ? rowStep : timeStep;
+
+          for (let substep = 0; substep < substeps; substep += 1) {
+            values = { ...values };
+            if (Number.isFinite(coarseStep) && coarseStep !== 0) values.dt = coarseStep / substeps;
+            for (const assignment of assignments) {
+              if (assignment.condition && !evaluate(assignment.condition, values, assignment.lineNumber)) continue;
+              if (assignment.target === "dt" && Number.isFinite(coarseStep) && coarseStep !== 0) {
+                values.dt = coarseStep;
+              }
+              const result = evaluate(assignment.expression, values, assignment.lineNumber);
+              if (!Number.isFinite(result)) {
+                throw new Error(`Referenz, Zeile ${assignment.lineNumber}: Die Berechnung für „${assignment.target}“ ist nicht endlich.`);
+              }
+              values[assignment.target] = assignment.target === "dt" ? result / substeps : result;
+            }
+            completedSubsteps += 1;
+            if (completedSubsteps % outputStride === 0 || completedSubsteps === iterationCount * substeps) {
+              rows.push({ ...values });
+            }
+          }
+        }
+        return rows;
+      }
+
+      function niceStep(span, targetTicks = 6) {
+        const rough = span / targetTicks;
+        const power = 10 ** Math.floor(Math.log10(rough));
+        const fraction = rough / power;
+        const niceFraction = fraction <= 1 ? 1 : fraction <= 2 ? 2 : fraction <= 5 ? 5 : 10;
+        return niceFraction * power;
+      }
+
+      function automaticRange(values) {
+        const dataMin = Math.min(...values);
+        const dataMax = Math.max(...values);
+        const min = Math.min(0, dataMin);
+        const max = Math.max(0, dataMax);
+        if (min === max) return { min: 0, max: 1 };
+        const padding = (max - min) * 0.06;
+        return {
+          min: min === 0 ? 0 : min - padding,
+          max: max === 0 ? 0 : max + padding
+        };
+      }
+
+      function axisRange(axis, values) {
+        const mode = $(`#${axis}-mode`).value;
+        if (mode === "manual") {
+          const minText = $(`#${axis}-min`).value.trim();
+          const maxText = $(`#${axis}-max`).value.trim();
+          const min = Number(minText);
+          const max = Number(maxText);
+          if (!minText || !maxText || !Number.isFinite(min) || !Number.isFinite(max) || min >= max) {
+            throw new Error(`${axis.toUpperCase()}-Achse: Bitte gültige Werte mit Minimum kleiner als Maximum eintragen.`);
+          }
+          return { min, max };
+        }
+        return automaticRange(values);
+      }
+
+      function axisTickSettings(axis, range) {
+        const stepText = $(`#${axis}-tick-step`).value.trim();
+        const step = stepText ? Number(stepText) : niceStep(range.max - range.min);
+        const subdivisions = Number($(`#${axis}-subdivisions`).value);
+        if (!Number.isFinite(step) || step <= 0) {
+          throw new Error(`${axis.toUpperCase()}-Achse: Der Hauptstrich-Abstand muss größer als 0 sein.`);
+        }
+        if (!Number.isInteger(subdivisions) || subdivisions < 1 || subdivisions > 20) {
+          throw new Error(`${axis.toUpperCase()}-Achse: Die Teilungen müssen eine ganze Zahl zwischen 1 und 20 sein.`);
+        }
+        const majorTickCount = Math.floor(range.max / step) - Math.ceil(range.min / step) + 1;
+        if (majorTickCount > 500) {
+          throw new Error(`${axis.toUpperCase()}-Achse: Der Hauptstrich-Abstand ist zu klein für den gewählten Bereich.`);
+        }
+        return { step, subdivisions };
+      }
+
+      function zoomedRange(range, center, scale) {
+        const visibleSpan = (range.max - range.min) / scale;
+        const midpoint = range.min + center * (range.max - range.min);
+        return { min: midpoint - visibleSpan / 2, max: midpoint + visibleSpan / 2 };
+      }
+
+      function resetChartZoom() {
+        chartZoom = { scale: 1, centerX: 0.5, centerY: 0.5 };
+        chartPan = null;
+      }
+
+      function handleChartPointerDown(event) {
+        if (event.button !== 0 || chartZoom.scale <= 1 || !chartPlotBounds) return;
+        const bounds = canvas.getBoundingClientRect();
+        const pointerX = event.clientX - bounds.left;
+        const pointerY = event.clientY - bounds.top;
+        if (pointerX < chartPlotBounds.left || pointerX > chartPlotBounds.right
+          || pointerY < chartPlotBounds.top || pointerY > chartPlotBounds.bottom) return;
+
+        event.preventDefault();
+        hideChartHover();
+        chartPan = {
+          pointerId: event.pointerId,
+          startClientX: event.clientX,
+          startClientY: event.clientY,
+          startCenterX: chartZoom.centerX,
+          startCenterY: chartZoom.centerY,
+          scale: chartZoom.scale,
+          plotWidth: chartPlotBounds.right - chartPlotBounds.left,
+          plotHeight: chartPlotBounds.bottom - chartPlotBounds.top
+        };
+        canvas.setPointerCapture(event.pointerId);
+        canvas.style.cursor = "grabbing";
+      }
+
+      function finishChartPan(event) {
+        if (!chartPan || (event && event.pointerId !== chartPan.pointerId)) return;
+        const pointerId = chartPan.pointerId;
+        chartPan = null;
+        if (canvas.hasPointerCapture(pointerId)) canvas.releasePointerCapture(pointerId);
+        canvas.style.cursor = chartZoom.scale > 1 ? "grab" : "default";
+      }
+
+      function handleChartWheel(event) {
+        if (!chartPlotBounds || !chartBaseRanges) return;
+        const bounds = canvas.getBoundingClientRect();
+        const pointerX = event.clientX - bounds.left;
+        const pointerY = event.clientY - bounds.top;
+        const plot = chartPlotBounds;
+        if (pointerX < plot.left || pointerX > plot.right || pointerY < plot.top || pointerY > plot.bottom) return;
+
+        event.preventDefault();
+        const oldScale = chartZoom.scale;
+        const nextScale = Math.min(1000, Math.max(1, oldScale * (event.deltaY < 0 ? 1.2 : 1 / 1.2)));
+        if (nextScale === oldScale) return;
+        const pointerFractionX = (pointerX - plot.left) / (plot.right - plot.left);
+        const pointerFractionY = (plot.bottom - pointerY) / (plot.bottom - plot.top);
+        const centerX = chartZoom.centerX + (pointerFractionX - 0.5) * (1 / oldScale - 1 / nextScale);
+        const centerY = chartZoom.centerY + (pointerFractionY - 0.5) * (1 / oldScale - 1 / nextScale);
+        chartZoom = {
+          scale: nextScale,
+          centerX: Math.min(1 - 0.5 / nextScale, Math.max(0.5 / nextScale, centerX)),
+          centerY: Math.min(1 - 0.5 / nextScale, Math.max(0.5 / nextScale, centerY))
+        };
+        renderChart();
+      }
+
+      function valuesInsideRange(points, valueName, filterName, range) {
+        const values = [];
+        for (let index = 0; index < points.length; index += 1) {
+          const point = points[index];
+          const filterValue = point[filterName];
+          if (filterValue >= range.min && filterValue <= range.max) values.push(point[valueName]);
+          if (index === 0) continue;
+
+          const previous = points[index - 1];
+          const previousFilter = previous[filterName];
+          const difference = filterValue - previousFilter;
+          if (difference === 0) continue;
+          for (const boundary of [range.min, range.max]) {
+            if ((previousFilter - boundary) * (filterValue - boundary) < 0) {
+              const proportion = (boundary - previousFilter) / difference;
+              values.push(previous[valueName] + proportion * (point[valueName] - previous[valueName]));
+            }
+          }
+        }
+        return values;
+      }
+
+      function formatNumber(value) {
+        return new Intl.NumberFormat("de-DE", { maximumSignificantDigits: 4 }).format(value);
+      }
+
+      function hideChartHover() {
+        $("#chart-tooltip").hidden = true;
+        $("#chart-point-marker").hidden = true;
+      }
+
+      function handleChartPointerMove(event) {
+        if (chartPan && event.pointerId === chartPan.pointerId) {
+          const centerX = chartPan.startCenterX
+            - (event.clientX - chartPan.startClientX) / chartPan.plotWidth / chartPan.scale;
+          const centerY = chartPan.startCenterY
+            + (event.clientY - chartPan.startClientY) / chartPan.plotHeight / chartPan.scale;
+          const halfView = 0.5 / chartPan.scale;
+          chartZoom.centerX = Math.min(1 - halfView, Math.max(halfView, centerX));
+          chartZoom.centerY = Math.min(1 - halfView, Math.max(halfView, centerY));
+          renderChart();
+          return;
+        }
+        if (chartHitTargets.length === 0) {
+          hideChartHover();
+          return;
+        }
+        const bounds = canvas.getBoundingClientRect();
+        const pointerX = event.clientX - bounds.left;
+        const pointerY = event.clientY - bounds.top;
+        let nearest = null;
+        let nearestDistance = Infinity;
+
+        for (const point of chartHitTargets) {
+          const distance = Math.hypot(point.pixelX - pointerX, point.pixelY - pointerY);
+          if (distance < nearestDistance) {
+            nearest = point;
+            nearestDistance = distance;
+          }
+        }
+
+        if (!nearest || !chartPlotBounds
+          || pointerX < chartPlotBounds.left || pointerX > chartPlotBounds.right
+          || pointerY < chartPlotBounds.top || pointerY > chartPlotBounds.bottom) {
+          hideChartHover();
+          return;
+        }
+
+        const marker = $("#chart-point-marker");
+        const tooltip = $("#chart-tooltip");
+        const wrapper = canvas.parentElement;
+        marker.hidden = false;
+        tooltip.hidden = false;
+        marker.style.left = `${canvas.offsetLeft + nearest.pixelX}px`;
+        marker.style.top = `${canvas.offsetTop + nearest.pixelY}px`;
+        marker.style.setProperty("--marker-color", nearest.color);
+        tooltip.style.setProperty("--tooltip-color", nearest.color);
+        tooltip.textContent = `${nearest.isReference ? "Referenz: " : ""}${nearest.yName}(${nearest.xName})\n${nearest.xName} = ${formatNumber(nearest.x)}\n${nearest.yName} = ${formatNumber(nearest.y)}`;
+
+        const left = canvas.offsetLeft + nearest.pixelX;
+        const top = canvas.offsetTop + nearest.pixelY;
+        const tooltipWidth = tooltip.offsetWidth;
+        const tooltipHeight = tooltip.offsetHeight;
+        const horizontal = left + tooltipWidth + 14 <= wrapper.clientWidth ? left + 12 : left - tooltipWidth - 12;
+        const vertical = top + tooltipHeight + 14 <= wrapper.clientHeight ? top + 12 : top - tooltipHeight - 12;
+        tooltip.style.left = `${Math.max(6, horizontal)}px`;
+        tooltip.style.top = `${Math.max(6, vertical)}px`;
+      }
+
+      function renderTablePage() {
+        const head = $("#table-head");
+        const body = $("#table-body");
+        head.replaceChildren();
+        body.replaceChildren();
+
+        const columns = [...new Set(simulationRows.flatMap((row) => Object.keys(row)))];
+        const headerRow = document.createElement("tr");
+        for (const name of ["Schritt", ...columns]) {
+          const cell = document.createElement("th");
+          cell.scope = "col";
+          cell.textContent = name;
+          headerRow.append(cell);
+        }
+        head.append(headerRow);
+
+        if (simulationRows.length === 0) {
+          const row = document.createElement("tr");
+          const cell = document.createElement("td");
+          cell.colSpan = Math.max(1, columns.length + 1);
+          cell.textContent = "Noch keine Simulationsergebnisse.";
+          row.append(cell);
+          body.append(row);
+        } else {
+          const pageSize = 50;
+          const pageCount = Math.ceil(simulationRows.length / pageSize);
+          tablePage = Math.min(tablePage, pageCount - 1);
+          const firstIndex = tablePage * pageSize;
+          const lastIndex = Math.min(firstIndex + pageSize, simulationRows.length);
+          for (let index = firstIndex; index < lastIndex; index += 1) {
+            const row = document.createElement("tr");
+            const step = document.createElement("td");
+            step.textContent = String(index);
+            row.append(step);
+            for (const name of columns) {
+              const cell = document.createElement("td");
+              cell.textContent = Number.isFinite(simulationRows[index][name]) ? formatNumber(simulationRows[index][name]) : "–";
+              row.append(cell);
+            }
+            body.append(row);
+          }
+        }
+
+        const pageCount = Math.max(1, Math.ceil(simulationRows.length / 50));
+        $("#table-page").textContent = `${tablePage + 1} / ${pageCount}`;
+        $("#table-previous").disabled = tablePage === 0;
+        $("#table-next").disabled = tablePage >= pageCount - 1;
+      }
+
+      function chartColors() {
+        if (printMode) {
+          return {
+            background: "#ffffff",
+            grid: "#d0d0d0",
+            axis: "#000000",
+            label: "#333333",
+            text: "#000000",
+            error: "#000000"
+          };
+        }
+        const style = getComputedStyle(document.documentElement);
+        return {
+          background: style.getPropertyValue("--chart-bg").trim(),
+          grid: style.getPropertyValue("--chart-grid").trim(),
+          axis: style.getPropertyValue("--chart-axis").trim(),
+          label: style.getPropertyValue("--chart-label").trim(),
+          text: style.getPropertyValue("--chart-text").trim(),
+          error: style.getPropertyValue("--chart-error").trim()
+        };
+      }
+
+      function referenceColor(color) {
+        const match = /^#([\da-f]{6})$/i.exec(color);
+        if (!match) return color;
+        const isLightTheme = printMode || document.documentElement.dataset.theme === "light";
+        const channels = [0, 2, 4].map((offset) => 255 - Number.parseInt(match[1].slice(offset, offset + 2), 16));
+        const adjusted = channels.map((channel) => Math.round(isLightTheme ? channel * 0.65 : channel + (255 - channel) * 0.45));
+        return `#${adjusted.map((channel) => channel.toString(16).padStart(2, "0")).join("")}`;
+      }
+
+      function renderChart() {
+        chartHitTargets = [];
+        chartPlotBounds = null;
+        chartBaseRanges = null;
+        canvas.style.cursor = chartPan ? "grabbing" : chartZoom.scale > 1 ? "grab" : "default";
+        hideChartHover();
+        const bounds = canvas.getBoundingClientRect();
+        const width = Math.max(280, bounds.width);
+        const height = Math.max(300, bounds.height);
+        const ratio = window.devicePixelRatio || 1;
+        canvas.width = Math.round(width * ratio);
+        canvas.height = Math.round(height * ratio);
+        context.setTransform(ratio, 0, 0, ratio, 0, 0);
+        context.clearRect(0, 0, width, height);
+        const colors = chartColors();
+        context.fillStyle = colors.background;
+        context.fillRect(0, 0, width, height);
+        $("#legend").replaceChildren();
+
+        if (simulationRows.length === 0) {
+          hideChartHover();
+          setChartStatus("");
+          context.fillStyle = colors.label;
+          context.font = "15px system-ui, sans-serif";
+          context.textAlign = "center";
+          context.fillText("Starte die Simulation, um das Diagramm zu sehen.", width / 2, height / 2);
+          return;
+        }
+
+        try {
+          const settings = getGraphSettings();
+          const series = settings.map((graph, index) => {
+            const points = simulationRows
+              .filter((row) => Number.isFinite(row[graph.x]) && Number.isFinite(row[graph.y]))
+              .map((row) => ({ x: row[graph.x], y: row[graph.y] }));
+            const reference = getReferencePoints(graph);
+            return { ...graph, index, points, reference };
+          });
+          const allPoints = series.flatMap((graph) => [...graph.points, ...graph.reference]);
+          if (allPoints.length === 0) {
+            hideChartHover();
+            setChartStatus("");
+            context.fillStyle = colors.label;
+            context.font = "15px system-ui, sans-serif";
+            context.textAlign = "center";
+            context.fillText("Für die ausgewählten Größen gibt es keine Messpunkte.", width / 2, height / 2);
+            return;
+          }
+
+          const allX = allPoints.map((point) => point.x);
+          const allY = allPoints.map((point) => point.y);
+          const manualX = $("#x-mode").value === "manual" ? axisRange("x", allX) : null;
+          const manualY = $("#y-mode").value === "manual" ? axisRange("y", allY) : null;
+          const visibleX = manualY
+            ? series.flatMap((graph) => [graph.points, graph.reference]
+              .flatMap((points) => valuesInsideRange(points, "x", "y", manualY)))
+            : allX;
+          const visibleY = manualX
+            ? series.flatMap((graph) => [graph.points, graph.reference]
+              .flatMap((points) => valuesInsideRange(points, "y", "x", manualX)))
+            : allY;
+          const baseXRange = manualX || axisRange("x", visibleX.length ? visibleX : allX);
+          const baseYRange = manualY || axisRange("y", visibleY.length ? visibleY : allY);
+          chartBaseRanges = { x: baseXRange, y: baseYRange };
+          const xRange = zoomedRange(baseXRange, chartZoom.centerX, chartZoom.scale);
+          const yRange = zoomedRange(baseYRange, chartZoom.centerY, chartZoom.scale);
+          drawAxes(width, height, xRange, yRange, series);
+          const plot = { left: 66, right: width - 18, top: 20, bottom: height - 48 };
+          chartPlotBounds = plot;
+          const mapX = (value) => plot.left + (value - xRange.min) / (xRange.max - xRange.min) * (plot.right - plot.left);
+          const mapY = (value) => plot.bottom - (value - yRange.min) / (yRange.max - yRange.min) * (plot.bottom - plot.top);
+
+          context.save();
+          context.beginPath();
+          context.rect(plot.left, plot.top, plot.right - plot.left, plot.bottom - plot.top);
+          context.clip();
+          for (const graph of series) {
+            drawLine(graph.points, graph.color, mapX, mapY, false);
+            if (graph.reference.length > 0) drawLine(graph.reference, graph.color, mapX, mapY, true);
+            for (const [points, isReference] of [[graph.points, false], [graph.reference, true]]) {
+              for (const point of points) {
+                const pixelX = mapX(point.x);
+                const pixelY = mapY(point.y);
+                if (pixelX >= plot.left && pixelX <= plot.right && pixelY >= plot.top && pixelY <= plot.bottom) {
+                  chartHitTargets.push({
+                    x: point.x,
+                    y: point.y,
+                    pixelX,
+                    pixelY,
+                    xName: graph.x,
+                    yName: graph.y,
+                    color: graph.color,
+                    isReference
+                  });
+                }
+              }
+            }
+          }
+          context.restore();
+          renderLegend(series);
+          const referenceStatus = $("#show-reference").checked && !series.some((graph) => graph.reference.length > 0)
+            ? "Für die ausgewählten Größen sind keine Referenzwerte verfügbar."
+            : "";
+          setChartStatus(referenceStatus);
+          if (chartHitTargets.length === 0) hideChartHover();
+          updatePrintSummary();
+        } catch (error) {
+          hideChartHover();
+          context.fillStyle = colors.error;
+          context.font = "14px system-ui, sans-serif";
+          context.textAlign = "center";
+          context.fillText(error.message, width / 2, height / 2);
+          setChartStatus(error.message, "error");
+        }
+      }
+
+      function setChartStatus(message, kind = "") {
+        const status = $("#chart-status");
+        status.textContent = message;
+        status.dataset.kind = kind;
+      }
+
+      function drawAxes(width, height, xRange, yRange, graphs) {
+        const plot = { left: 66, right: width - 18, top: 20, bottom: height - 48 };
+        const colors = chartColors();
+        context.font = "12px system-ui, sans-serif";
+        context.lineWidth = 1;
+        context.strokeStyle = colors.grid;
+        context.fillStyle = colors.label;
+
+        const xTicks = axisTickSettings("x", xRange);
+        const yTicks = axisTickSettings("y", yRange);
+        drawAxisGrid("x", xRange, xTicks, plot, colors);
+        drawAxisGrid("y", yRange, yTicks, plot, colors);
+
+        context.strokeStyle = colors.axis;
+        context.beginPath();
+        context.moveTo(plot.left, plot.top);
+        context.lineTo(plot.left, plot.bottom);
+        context.lineTo(plot.right, plot.bottom);
+        context.stroke();
+
+        if (xRange.min <= 0 && xRange.max >= 0) {
+          const zeroX = plot.left + (0 - xRange.min) / (xRange.max - xRange.min) * (plot.right - plot.left);
+          context.beginPath();
+          context.moveTo(zeroX, plot.top);
+          context.lineTo(zeroX, plot.bottom);
+          context.stroke();
+        }
+        if (yRange.min <= 0 && yRange.max >= 0) {
+          const zeroY = plot.bottom - (0 - yRange.min) / (yRange.max - yRange.min) * (plot.bottom - plot.top);
+          context.beginPath();
+          context.moveTo(plot.left, zeroY);
+          context.lineTo(plot.right, zeroY);
+          context.stroke();
+        }
+        drawAxisArrows(plot, colors.axis);
+      }
+
+      function drawAxisGrid(axis, range, ticks, plot, colors) {
+        const horizontal = axis === "y";
+        const span = range.max - range.min;
+        const firstMajor = Math.ceil(range.min / ticks.step) * ticks.step;
+        const lastMajor = Math.floor(range.max / ticks.step) * ticks.step;
+        const minorStep = ticks.step / ticks.subdivisions;
+        const minorStart = Math.ceil(range.min / minorStep) * minorStep;
+
+        context.save();
+        context.strokeStyle = colors.grid;
+        context.globalAlpha = 0.42;
+        for (let value = minorStart, guard = 0; value <= range.max && guard < 10000; value += minorStep, guard += 1) {
+          const nearestMajor = Math.round(value / ticks.step) * ticks.step;
+          if (ticks.subdivisions === 1 || Math.abs(value - nearestMajor) < ticks.step * 1e-8) continue;
+          const position = horizontal
+            ? plot.bottom - (value - range.min) / span * (plot.bottom - plot.top)
+            : plot.left + (value - range.min) / span * (plot.right - plot.left);
+          context.beginPath();
+          if (horizontal) {
+            context.moveTo(plot.left, position);
+            context.lineTo(plot.right, position);
+          } else {
+            context.moveTo(position, plot.top);
+            context.lineTo(position, plot.bottom);
+          }
+          context.stroke();
+        }
+        context.restore();
+
+        context.save();
+        context.strokeStyle = colors.grid;
+        context.fillStyle = colors.label;
+        context.globalAlpha = 0.85;
+        for (let value = firstMajor, guard = 0; value <= lastMajor && guard < 500; value += ticks.step, guard += 1) {
+          const position = horizontal
+            ? plot.bottom - (value - range.min) / span * (plot.bottom - plot.top)
+            : plot.left + (value - range.min) / span * (plot.right - plot.left);
+          context.beginPath();
+          if (horizontal) {
+            context.moveTo(plot.left, position);
+            context.lineTo(plot.right, position);
+            context.stroke();
+            context.textAlign = "right";
+            context.fillText(formatNumber(value), plot.left - 9, position + 4);
+          } else {
+            context.moveTo(position, plot.top);
+            context.lineTo(position, plot.bottom);
+            context.stroke();
+            context.textAlign = "center";
+            context.fillText(formatNumber(value), position, plot.bottom + 20);
+          }
+        }
+        context.restore();
+      }
+
+      function drawAxisArrows(plot, color) {
+        context.save();
+        context.fillStyle = color;
+        context.beginPath();
+        context.moveTo(plot.right + 5, plot.bottom);
+        context.lineTo(plot.right - 2, plot.bottom - 3);
+        context.lineTo(plot.right - 2, plot.bottom + 3);
+        context.closePath();
+        context.fill();
+        context.beginPath();
+        context.moveTo(plot.left, plot.top - 5);
+        context.lineTo(plot.left - 3, plot.top + 2);
+        context.lineTo(plot.left + 3, plot.top + 2);
+        context.closePath();
+        context.fill();
+        context.restore();
+      }
+
+      function drawLine(points, color, mapX, mapY, dashed) {
+        if (points.length < 2) return;
+        context.save();
+        context.beginPath();
+        context.strokeStyle = dashed ? referenceColor(color) : color;
+        context.globalAlpha = dashed ? 0.8 : 1;
+        context.lineWidth = dashed ? 3 : 2;
+        const dashLength = Math.max(10, Math.min(18, canvas.clientWidth / 36));
+        context.setLineDash(dashed ? [dashLength, dashLength * 0.75] : []);
+        points.forEach((point, index) => {
+          const x = mapX(point.x);
+          const y = mapY(point.y);
+          if (index === 0) context.moveTo(x, y);
+          else context.lineTo(x, y);
+        });
+        context.stroke();
+        context.restore();
+      }
+
+      function renderLegend(series) {
+        const legend = $("#legend");
+        legend.replaceChildren();
+        series.forEach((graph) => {
+          const item = document.createElement("span");
+          item.className = "legend-item";
+          const swatch = document.createElement("span");
+          swatch.className = "legend-swatch";
+          swatch.style.backgroundColor = graph.color;
+          const label = document.createElement("span");
+          label.textContent = `${graph.y}(${graph.x})`;
+          item.append(swatch, label);
+          legend.append(item);
+          if (graph.reference.length > 0) {
+            const referenceItem = document.createElement("span");
+            referenceItem.className = "legend-item";
+            const dashed = document.createElement("span");
+            dashed.className = "legend-swatch";
+            const dashLength = Math.max(10, Math.min(18, canvas.clientWidth / 36));
+            const referenceStroke = referenceColor(graph.color);
+            dashed.style.background = `repeating-linear-gradient(90deg, ${referenceStroke} 0 ${dashLength}px, transparent ${dashLength}px ${dashLength * 1.75}px)`;
+            const referenceLabel = document.createElement("span");
+            referenceLabel.textContent = `Referenz: ${graph.y}(${graph.x})`;
+            referenceItem.append(dashed, referenceLabel);
+            legend.append(referenceItem);
+          }
+        });
+      }
+
+      function updatePrintSummary() {
+        $("#print-code").textContent = programInput.value.trim();
+        const values = serializeStartValues() || "Keine Startwerte erforderlich";
+        $("#print-values").textContent = `${values}\n\nWiederholungen: ${$("#iterations").value}`;
+        $("#print-datetime").textContent = new Intl.DateTimeFormat("de-DE", {
+          dateStyle: "short",
+          timeStyle: "short"
+        }).format(new Date());
+      }
+
+      function updateAxisControls() {
+        for (const axis of ["x", "y"]) {
+          $(`#${axis}-min`).disabled = false;
+          $(`#${axis}-max`).disabled = false;
+        }
+      }
+
+      function configForExport() {
+        const { requiredStartValues } = parseProgram();
+        parseStartValues(requiredStartValues);
+        for (const axis of ["x", "y"]) {
+          if ($(`#${axis}-mode`).value === "manual") axisRange(axis, []);
+        }
+        return {
+          format: "physik-simulation",
+          version: 1,
+          program: programInput.value,
+          startValues: serializeStartValues(),
+          iterations: getIterations(),
+          xVariable: $("#x-variable").value,
+          graphs: getGraphSettings(),
+          axes: Object.fromEntries(["x", "y"].map((axis) => [axis, {
+            mode: $(`#${axis}-mode`).value,
+            min: $(`#${axis}-min`).value,
+            max: $(`#${axis}-max`).value,
+            tickStep: $(`#${axis}-tick-step`).value,
+            subdivisions: $(`#${axis}-subdivisions`).value
+          }])),
+          showReference: $("#show-reference").checked
+        };
+      }
+
+      function applyImportedConfig(config) {
+        if (!config || config.format !== "physik-simulation" || config.version !== 1) {
+          throw new Error("Die Datei ist kein unterstütztes Physik-Simulationsprogramm (Formatversion 1).");
+        }
+        if (typeof config.program !== "string" || typeof config.startValues !== "string") {
+          throw new Error("Die Programmdatei enthält keinen gültigen Code oder keine Startwerte.");
+        }
+        const importedValues = parseStartValueText(config.startValues);
+        const requiredStartValues = parseProgram(config.program).requiredStartValues;
+        const importedX = config.xVariable ?? config.graphs?.[0]?.x ?? "t";
+        if (typeof importedX !== "string" || !/^[A-Za-z_][A-Za-z0-9_]*$/.test(importedX)) {
+          throw new Error("Die Programmdatei enthält keine gültige x-Achsengröße.");
+        }
+        for (const name of requiredStartValues) {
+          if (!Object.hasOwn(importedValues, name)) {
+            throw new Error(`Die Programmdatei enthält keinen Startwert für „${name}“.`);
+          }
+        }
+        const loops = Number(config.iterations);
+        if (!Number.isInteger(loops) || loops < 1 || loops > 10000) {
+          throw new Error("Die Programmdatei enthält eine ungültige Anzahl an Wiederholungen.");
+        }
+        if (!Array.isArray(config.graphs) || config.graphs.length < 1 || config.graphs.length > 12) {
+          throw new Error("Die Programmdatei muss zwischen 1 und 12 Graphen enthalten.");
+        }
+        for (const graph of config.graphs) {
+          if (!graph || !/^[A-Za-z_][A-Za-z0-9_]*$/.test(graph.y) || !/^#[0-9a-f]{6}$/i.test(graph.color)) {
+            throw new Error("Die Programmdatei enthält eine ungültige Grapheneinstellung.");
+          }
+        }
+        for (const axis of ["x", "y"]) {
+          const setting = config.axes?.[axis];
+          if (!setting || !["auto", "manual"].includes(setting.mode)) {
+            throw new Error("Die Programmdatei enthält eine ungültige Achseneinstellung.");
+          }
+          if (setting.mode === "manual" && (String(setting.min ?? "").trim() === "" || String(setting.max ?? "").trim() === "" || !Number.isFinite(Number(setting.min)) || !Number.isFinite(Number(setting.max)) || Number(setting.min) >= Number(setting.max))) {
+            throw new Error("Die Programmdatei enthält einen ungültigen manuellen Achsenbereich.");
+          }
+          const tickStep = String(setting.tickStep ?? "").trim();
+          if (tickStep && (!Number.isFinite(Number(tickStep)) || Number(tickStep) <= 0)) {
+            throw new Error("Die Programmdatei enthält einen ungültigen Hauptstrich-Abstand.");
+          }
+          const subdivisions = Number(setting.subdivisions ?? 1);
+          if (!Number.isInteger(subdivisions) || subdivisions < 1 || subdivisions > 20) {
+            throw new Error("Die Programmdatei enthält ungültige Achsen-Teilungen.");
+          }
+        }
+        if (typeof config.showReference !== "boolean") {
+          throw new Error("Die Programmdatei enthält keine gültige Einstellung für die Referenzkurve.");
+        }
+
+        programInput.value = config.program;
+        startValueDrafts = new Map(Object.entries(importedValues).map(([name, value]) => [name, String(value)]));
+        refreshStartValueFields();
+        refreshVariableOptions();
+        $("#x-variable").value = importedX;
+        $("#iterations").value = String(loops);
+        $("#show-reference").checked = config.showReference;
+        for (const axis of ["x", "y"]) {
+          $(`#${axis}-mode`).value = config.axes[axis].mode;
+          $(`#${axis}-min`).value = config.axes[axis].min ?? "";
+          $(`#${axis}-max`).value = config.axes[axis].max ?? "";
+          $(`#${axis}-tick-step`).value = config.axes[axis].tickStep ?? "";
+          $(`#${axis}-subdivisions`).value = String(config.axes[axis].subdivisions ?? 1);
+        }
+        seriesList.replaceChildren();
+        config.graphs.forEach((graph) => addGraph(graph));
+        updateAxisControls();
+        refreshVariableOptions();
+        updatePrintSummary();
+        runSimulation();
+      }
+
+      $("#run-button").addEventListener("click", runSimulation);
+      $("#add-series").addEventListener("click", () => {
+        resetChartZoom();
+        addGraph();
+      });
+      $("#x-variable").addEventListener("change", () => {
+        resetChartZoom();
+        renderChart();
+      });
+      canvas.addEventListener("wheel", handleChartWheel, { passive: false });
+      canvas.addEventListener("pointerdown", handleChartPointerDown);
+      canvas.addEventListener("pointermove", handleChartPointerMove);
+      canvas.addEventListener("pointerleave", hideChartHover);
+      canvas.addEventListener("pointerup", finishChartPan);
+      canvas.addEventListener("pointercancel", finishChartPan);
+      canvas.addEventListener("lostpointercapture", finishChartPan);
+      $("#table-toggle").addEventListener("click", () => {
+        const panel = $("#table-panel");
+        panel.hidden = !panel.hidden;
+        $("#table-toggle").setAttribute("aria-expanded", String(!panel.hidden));
+        if (!panel.hidden) renderTablePage();
+      });
+      $("#table-previous").addEventListener("click", () => {
+        tablePage = Math.max(0, tablePage - 1);
+        renderTablePage();
+      });
+      $("#table-next").addEventListener("click", () => {
+        tablePage += 1;
+        renderTablePage();
+      });
+      $("#show-reference").addEventListener("change", () => {
+        resetChartZoom();
+        renderChart();
+      });
+      $("#theme-slider").addEventListener("input", (event) => {
+        const theme = event.target.value === "1" ? "light" : "dark";
+        document.documentElement.dataset.theme = theme;
+        document.querySelector('meta[name="theme-color"]').content = theme === "light" ? "#edf2f7" : "#0b1220";
+        renderChart();
+      });
+      programInput.addEventListener("input", () => {
+        refreshStartValueFields();
+        refreshVariableOptions();
+        updatePrintSummary();
+      });
+      $("#iterations").addEventListener("input", updatePrintSummary);
+      for (const axis of ["x", "y"]) {
+        $(`#${axis}-mode`).addEventListener("change", () => {
+          updateAxisControls();
+          resetChartZoom();
+          renderChart();
+        });
+        $(`#${axis}-min`).addEventListener("input", () => {
+          resetChartZoom();
+          renderChart();
+        });
+        $(`#${axis}-max`).addEventListener("input", () => {
+          resetChartZoom();
+          renderChart();
+        });
+        $(`#${axis}-tick-step`).addEventListener("input", renderChart);
+        $(`#${axis}-subdivisions`).addEventListener("input", renderChart);
+      }
+
+      $("#export-button").addEventListener("click", () => {
+        try {
+          const data = JSON.stringify(configForExport(), null, 2);
+          const url = URL.createObjectURL(new Blob([data], { type: "application/json" }));
+          const link = document.createElement("a");
+          link.href = url;
+          link.download = "physik-simulation.json";
+          document.body.append(link);
+          link.click();
+          link.remove();
+          setTimeout(() => URL.revokeObjectURL(url), 1000);
+          setStatus("Programm wurde als JSON-Datei exportiert.", "success");
+        } catch (error) {
+          setStatus(error.message || "Das Programm konnte nicht exportiert werden.", "error");
+        }
+      });
+
+      $("#import-button").addEventListener("click", () => $("#import-file").click());
+      $("#import-file").addEventListener("change", async (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+        try {
+          const config = JSON.parse(await file.text());
+          applyImportedConfig(config);
+          if ($("#status").dataset.kind !== "error") setStatus(`„${file.name}“ wurde importiert.`, "success");
+        } catch (error) {
+          setStatus(error.message || "Die Datei konnte nicht importiert werden.", "error");
+        } finally {
+          event.target.value = "";
+        }
+      });
+
+      $("#print-button").addEventListener("click", () => {
+        updatePrintSummary();
+        window.print();
+      });
+      $("#chart-print-button").addEventListener("click", () => {
+        updatePrintSummary();
+        window.print();
+      });
+      window.addEventListener("beforeprint", () => {
+        printMode = true;
+        documentTitleBeforePrint = document.title;
+        document.title = " ";
+        updatePrintSummary();
+        renderChart();
+      });
+      window.addEventListener("afterprint", () => {
+        printMode = false;
+        document.title = documentTitleBeforePrint;
+        renderChart();
+      });
+      window.addEventListener("resize", renderChart);
+
+      refreshStartValueFields();
+      addGraph({ x: "t", y: "s", color: colorPalette[0] });
+      updateAxisControls();
+      updatePrintSummary();
+      runSimulation();
+    </script>
   </body>
 </html>
