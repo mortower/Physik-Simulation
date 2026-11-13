@@ -73,18 +73,10 @@
       nav { min-height: 68px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
       .brand { color: var(--text); font-weight: 750; letter-spacing: .02em; text-decoration: none; }
       .nav-tools { display: flex; align-items: center; gap: 24px; }
-      .nav-links { display: flex; gap: 22px; }
-      .nav-links a { color: var(--muted); text-decoration: none; }
-      .nav-links a:hover { color: var(--text); }
       .theme-control { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: .82rem; white-space: nowrap; }
       .theme-control input { width: 42px; margin: 0; cursor: pointer; }
 
-      .intro { padding: 46px 0 26px; }
-      .eyebrow { color: var(--accent); font-size: .78rem; font-weight: 750; letter-spacing: .14em; text-transform: uppercase; }
-      h1 { margin: 6px 0 8px; font-size: clamp(2rem, 4vw, 3.2rem); line-height: 1.12; }
-      .intro p { max-width: 760px; margin: 0; color: var(--muted); }
-
-      .workspace { display: grid; grid-template-columns: minmax(310px, .85fr) minmax(0, 1.6fr); gap: 20px; align-items: start; padding: 10px 0 46px; }
+      .workspace { display: grid; grid-template-columns: minmax(310px, .85fr) minmax(0, 1.6fr); gap: 20px; align-items: start; padding: 28px 0 46px; }
       .panel { min-width: 0; border: 1px solid var(--line); border-radius: 16px; background: var(--panel); box-shadow: 0 18px 50px rgba(0,0,0,.18); }
       .controls-panel { padding: 22px; }
       .panel-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
@@ -92,6 +84,13 @@
       .panel-heading p { margin: 3px 0 0; color: var(--muted); font-size: .88rem; }
       .field { margin: 18px 0; }
       .field > label, .field-label { display: block; margin-bottom: 7px; font-size: .9rem; font-weight: 700; }
+      .program-label-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 7px; }
+      .program-label-row label { margin: 0; font-size: .9rem; font-weight: 700; }
+      .program-formula { min-height: 280px; overflow: auto; padding: 16px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--input-bg); color: var(--text); }
+      .program-formula .formula-line { min-height: 1.4em; }
+      .program-formula math { display: block; margin: 0; text-align: left; font-size: .9rem; }
+      .program-formula .formula-empty-line { height: 1.4em; }
+      .program-formula .formula-message { margin: 0; color: var(--muted); font-size: .88rem; }
       .help { margin: 6px 0 0; color: var(--muted); font-size: .8rem; }
       textarea, input[type="number"], .start-value-field input, select {
         width: 100%;
@@ -130,6 +129,7 @@
       .button-small { min-height: 34px; padding: 5px 10px; font-size: .85rem; }
       .run-button { width: 100%; min-height: 46px; margin-top: 16px; font-size: 1rem; }
       .status { min-height: 24px; margin: 12px 0 0; color: var(--muted); font-size: .88rem; }
+      #status:empty { display: none; }
       .status[data-kind="error"] { color: var(--danger); }
       .status[data-kind="success"] { color: var(--success); }
       .hidden-file { display: none; }
@@ -141,6 +141,8 @@
       .chart-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
       .chart-wrap { position: relative; width: 100%; overflow: hidden; border: 1px solid var(--line); border-radius: 10px; background: var(--chart-bg); }
       canvas { display: block; width: 100%; height: 410px; }
+      #chart-empty-hint { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; margin: 0; padding: 24px; color: var(--chart-label); text-align: center; pointer-events: none; }
+      #chart-empty-hint[hidden] { display: none; }
       .chart-point-marker { position: absolute; z-index: 2; width: 14px; height: 14px; border: 3px solid #fff; border-radius: 50%; box-shadow: 0 0 0 2px var(--marker-color); transform: translate(-50%, -50%); pointer-events: none; }
       .chart-tooltip { position: absolute; z-index: 3; max-width: 230px; padding: 8px 10px; border: 1px solid var(--line); border-left: 4px solid var(--tooltip-color); border-radius: 7px; background: var(--panel); color: var(--text); box-shadow: 0 5px 18px rgba(0,0,0,.24); font: .78rem/1.45 ui-monospace, SFMono-Regular, Consolas, monospace; white-space: pre-line; pointer-events: none; }
       .legend { display: flex; flex-wrap: wrap; gap: 8px 20px; min-height: 28px; padding: 4px 4px 2px; color: var(--muted); font-size: .85rem; }
@@ -203,9 +205,7 @@
         .container { width: min(100% - 22px, 1320px); }
         nav { min-height: 58px; flex-wrap: wrap; padding: 8px 0; }
         .nav-tools { width: 100%; }
-        .nav-links { gap: 13px; font-size: .88rem; }
         .nav-tools { flex-wrap: wrap; justify-content: space-between; gap: 10px; }
-        .intro { padding-top: 30px; }
         .controls-panel, .chart-panel { padding: 15px; }
         .chart-heading { flex-direction: column; }
         .chart-actions { justify-content: flex-start; }
@@ -262,10 +262,7 @@
         <nav aria-label="Hauptnavigation">
           <a class="brand" href="#start">Physik-Simulation</a>
           <div class="nav-tools">
-            <div class="nav-links">
-              <a href="#labor">Formellabor</a>
-              <a href="#diagramm">Diagramm</a>
-            </div>
+            <a class="button button-small" id="download-html-button" href="#download" aria-label="Simulation als eigenständige HTML-Datei herunterladen">Simulation herunterladen</a>
             <label class="theme-control" for="theme-slider">
               <span>Dark</span>
               <input id="theme-slider" type="range" min="0" max="1" step="1" value="0" aria-label="Darstellung zwischen Darkmode und Normalmodus umschalten" />
@@ -277,12 +274,6 @@
     </header>
 
     <main class="container" id="start">
-      <section class="intro">
-        <div class="eyebrow">Physik zum Ausprobieren</div>
-        <h1>Das Formellabor</h1>
-        <p>Schreibe Bewegungsgleichungen, lege Startwerte und Zeitschritte fest und untersuche die Ergebnisse im Diagramm.</p>
-      </section>
-
       <div class="workspace" id="labor">
         <section class="panel controls-panel" aria-labelledby="program-heading">
           <div class="panel-heading">
@@ -292,13 +283,12 @@
           </div>
 
           <div class="field">
-            <label for="program">Simulationscode</label>
-            <textarea id="program" spellcheck="false">ds = a/2 dt^2 + v * dt
-dv = a * dt
-
-s = s + ds
-v = v + dv
-t = t + dt</textarea>
+            <div class="program-label-row">
+              <label id="program-label" for="program">Simulationscode</label>
+              <button class="button button-small" id="program-view-toggle" type="button" aria-pressed="false">Formelansicht</button>
+            </div>
+            <textarea id="program" aria-labelledby="program-label" spellcheck="false"></textarea>
+            <div class="program-formula" id="program-formula" aria-labelledby="program-label" hidden></div>
           </div>
 
           <div class="field">
@@ -314,7 +304,7 @@ t = t + dt</textarea>
           </div>
 
           <button class="button button-primary run-button" id="run-button" type="button">▶ Simulation starten</button>
-          <p class="status" id="status" role="status" aria-live="polite">Passe Code oder Werte an und starte die Simulation.</p>
+          <p class="status" id="status" role="status" aria-live="polite"></p>
 
           <div class="row-actions" aria-label="Programmdatei und Druck">
             <button class="button button-small" id="export-button" type="button">Programm exportieren</button>
@@ -340,6 +330,7 @@ t = t + dt</textarea>
 
           <div class="chart-wrap">
             <canvas id="chart" role="img" aria-label="Diagramm der Simulationsergebnisse. Mit dem Mausrad zoomen."></canvas>
+            <p id="chart-empty-hint" role="status">Starte die Simulation, um das Diagramm zu sehen.</p>
             <div class="chart-point-marker" id="chart-point-marker" hidden></div>
             <div class="chart-tooltip" id="chart-tooltip" role="tooltip" hidden></div>
           </div>
@@ -372,6 +363,15 @@ t = t + dt</textarea>
               </div>
               <h4 class="y-axis-heading">y-Achse</h4>
               <div class="series-list" id="series-list"></div>
+              <template id="default-graph-template">
+                <div class="series-row" id="default-graph-placeholder">
+                  <select class="series-y" aria-label="Graph 1: Größe auf der y-Achse">
+                    <option value=""></option>
+                  </select>
+                  <input type="color" value="#55c2ff" aria-label="Farbe für Graph 1" />
+                  <button class="remove-series" type="button" disabled title="Graph entfernen" aria-label="Graph entfernen">×</button>
+                </div>
+              </template>
               <button class="button button-small add-series" id="add-series" type="button">+ Graph hinzufügen</button>
               <div class="check-row reference-toggle">
                 <input id="show-reference" type="checkbox" />
@@ -464,12 +464,14 @@ t = t + dt</textarea>
           </p>
         </details>
       </div>
-      <p class="footer-license">Diese Seite steht unter der <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.de" target="_blank" rel="noopener noreferrer">Creative-Commons-Lizenz CC BY-SA 4.0</a>.</p>
+      <p class="footer-license">Umsetzung: Moritz Thauer – <a href="https://www.loessnitzgymnasium.de" target="_blank" rel="noopener noreferrer">Lößnitzgymnasium Radebeul</a>. Diese Seite steht unter der <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.de" target="_blank" rel="noopener noreferrer">Creative-Commons-Lizenz CC BY-NC-SA 4.0</a>.</p>
     </footer>
 
     <script>
       const $ = (selector) => document.querySelector(selector);
       const programInput = $("#program");
+      const programFormula = $("#program-formula");
+      const programViewToggle = $("#program-view-toggle");
       const startValuesContainer = $("#start-values");
       const seriesList = $("#series-list");
       const canvas = $("#chart");
@@ -482,10 +484,12 @@ t = t + dt</textarea>
       let chartZoom = { scale: 1, centerX: 0.5, centerY: 0.5 };
       let chartPan = null;
       let tablePage = 0;
+      let timeDisplayFractionDigits = 0;
       let documentTitleBeforePrint = "";
       let referenceCurveCache = new Map();
       let startingValues = {};
-      let startValueDrafts = new Map([["a", "1"], ["m", "1"], ["dt", "1"], ["v", "0"], ["s", "0"], ["t", "0"]]);
+      let startValueDrafts = new Map();
+      let xVariableManuallySelected = false;
       let graphId = 0;
       let printMode = false;
 
@@ -535,7 +539,7 @@ t = t + dt</textarea>
           const token = current();
           if (token.type === "number") {
             index += 1;
-            return { type: "number", value: Number(token.value) };
+            return { type: "number", value: Number(token.value), raw: token.value };
           }
           if (token.type === "name") {
             index += 1;
@@ -643,6 +647,172 @@ t = t + dt</textarea>
 
         if (assignments.length === 0) throw new Error("Bitte gib mindestens eine Zuweisung ein.");
         return { assignments, names, requiredStartValues };
+      }
+
+      const mathMLNamespace = "http://www.w3.org/1998/Math/MathML";
+
+      function createMathElement(tagName, children = []) {
+        const element = document.createElementNS(mathMLNamespace, tagName);
+        children.forEach((child) => element.append(child));
+        return element;
+      }
+
+      function createMathToken(tagName, text) {
+        const element = createMathElement(tagName);
+        element.textContent = text;
+        return element;
+      }
+
+      function renderMathVariable(name) {
+        const separator = name.indexOf("_");
+        if (separator <= 0 || separator === name.length - 1) return createMathToken("mi", name);
+        const base = createMathToken("mi", name.slice(0, separator));
+        const suffix = name.slice(separator + 1);
+        const subscript = /^\d+$/.test(suffix) ? createMathToken("mn", suffix) : createMathToken("mi", suffix);
+        return createMathElement("msub", [base, subscript]);
+      }
+
+      function mathPrecedence(node) {
+        if (node.type === "comparison") return 1;
+        if (node.type === "binary") {
+          if (node.operator === "+" || node.operator === "-") return 2;
+          if (node.operator === "*" || node.operator === "/") return 3;
+          return 5;
+        }
+        if (node.type === "unary") return 4;
+        return 6;
+      }
+
+      function renderMathExpression(node, parentPrecedence = 0, parentOperator = "", side = "") {
+        let expression;
+        const precedence = mathPrecedence(node);
+
+        if (node.type === "number") {
+          const scientific = /^(.+?)[eE]([+-]?\d+)$/.exec(node.raw);
+          if (scientific) {
+            const exponent = scientific[2].replace(/^\+/, "");
+            const exponentNode = exponent.startsWith("-")
+              ? createMathElement("mrow", [
+                createMathToken("mo", "−"),
+                createMathToken("mn", exponent.slice(1))
+              ])
+              : createMathToken("mn", exponent);
+            expression = createMathElement("mrow", [
+              createMathToken("mn", scientific[1].replace(".", ",")),
+              createMathToken("mo", "×"),
+              createMathElement("msup", [
+                createMathToken("mn", "10"),
+                exponentNode
+              ])
+            ]);
+          } else {
+            expression = createMathToken("mn", node.raw.replace(".", ","));
+          }
+        } else if (node.type === "constant") {
+          expression = createMathToken("mi", node.value === Math.PI ? "π" : "e");
+        } else if (node.type === "variable") {
+          expression = renderMathVariable(node.name);
+        } else if (node.type === "unary") {
+          expression = createMathElement("mrow", [
+            createMathToken("mo", node.operator === "-" ? "−" : "+"),
+            renderMathExpression(node.value, precedence, node.operator, "right")
+          ]);
+        } else if (node.type === "function") {
+          if (node.name === "sqrt") {
+            expression = createMathElement("msqrt", [renderMathExpression(node.argument)]);
+          } else {
+            const functionName = createMathToken("mi", node.name);
+            functionName.setAttribute("mathvariant", "normal");
+            expression = createMathElement("mrow", [
+              functionName,
+              createMathToken("mo", "("),
+              renderMathExpression(node.argument),
+              createMathToken("mo", ")")
+            ]);
+          }
+        } else if (node.type === "comparison") {
+          const operator = { "<=": "≤", ">=": "≥", "==": "=" }[node.operator] || node.operator;
+          expression = createMathElement("mrow", [
+            renderMathExpression(node.left, precedence, node.operator, "left"),
+            createMathToken("mo", operator),
+            renderMathExpression(node.right, precedence, node.operator, "right")
+          ]);
+        } else if (node.operator === "^") {
+          expression = createMathElement("msup", [
+            renderMathExpression(node.left, precedence, node.operator, "left"),
+            renderMathExpression(node.right)
+          ]);
+        } else if (node.operator === "/") {
+          expression = createMathElement("mfrac", [
+            renderMathExpression(node.left),
+            renderMathExpression(node.right)
+          ]);
+        } else {
+          const operator = { "*": "·", "-": "−" }[node.operator] || node.operator;
+          expression = createMathElement("mrow", [
+            renderMathExpression(node.left, precedence, node.operator, "left"),
+            createMathToken("mo", operator),
+            renderMathExpression(node.right, precedence, node.operator, "right")
+          ]);
+        }
+
+        const needsParentheses = precedence < parentPrecedence
+          || (parentOperator === "-" && side === "right" && precedence === parentPrecedence)
+          || (parentOperator === "^" && side === "left" && precedence === parentPrecedence);
+        return needsParentheses
+          ? createMathElement("mrow", [createMathToken("mo", "("), expression, createMathToken("mo", ")")])
+          : expression;
+      }
+
+      function renderProgramFormula() {
+        programFormula.replaceChildren();
+        if (!programInput.value.trim()) {
+          const message = document.createElement("p");
+          message.className = "formula-message";
+          message.textContent = "Noch kein Simulationscode eingegeben.";
+          programFormula.append(message);
+          return;
+        }
+
+        try {
+          const { assignments } = parseProgram();
+          const assignmentsByLine = new Map(assignments.map((assignment) => [assignment.lineNumber, assignment]));
+          const lineCount = programInput.value.split(/\r?\n/).length;
+          for (let lineNumber = 1; lineNumber <= lineCount; lineNumber += 1) {
+            const assignment = assignmentsByLine.get(lineNumber);
+            if (!assignment) {
+              const emptyLine = document.createElement("div");
+              emptyLine.className = "formula-line formula-empty-line";
+              emptyLine.setAttribute("aria-hidden", "true");
+              programFormula.append(emptyLine);
+              continue;
+            }
+            const row = createMathElement("mrow");
+            if (assignment.condition) {
+              row.append(
+                createMathToken("mtext", "falls "),
+                renderMathExpression(assignment.condition),
+                createMathToken("mo", ":")
+              );
+            }
+            row.append(
+              renderMathVariable(assignment.target),
+              createMathToken("mo", "="),
+              renderMathExpression(assignment.expression)
+            );
+            const math = createMathElement("math", [row]);
+            math.setAttribute("display", "block");
+            const formulaLine = document.createElement("div");
+            formulaLine.className = "formula-line";
+            formulaLine.append(math);
+            programFormula.append(formulaLine);
+          }
+        } catch (error) {
+          const message = document.createElement("p");
+          message.className = "formula-message";
+          message.textContent = `Formelansicht für diesen Code nicht verfügbar: ${error.message}`;
+          programFormula.append(message);
+        }
       }
 
       function inferRequiredStartValues(programText) {
@@ -758,6 +928,17 @@ t = t + dt</textarea>
         return values;
       }
 
+      function getTimeDisplayFractionDigits(requiredNames) {
+        if (!requiredNames.has("dt")) return 0;
+        const input = Array.from(startValuesContainer.querySelectorAll("input[data-variable]"))
+          .find((candidate) => candidate.dataset.variable === "dt");
+        if (!input?.value.trim()) return 0;
+        const [mantissa, exponentText = "0"] = input.value.trim().replace(",", ".").toLowerCase().split("e");
+        const decimalPlaces = mantissa.split(".")[1]?.length ?? 0;
+        const exponent = Number(exponentText);
+        return Math.max(0, Math.min(15, decimalPlaces - exponent));
+      }
+
       function getIterations() {
         const value = Number($("#iterations").value);
         if (!Number.isInteger(value) || value < 1 || value > 10000) {
@@ -770,6 +951,7 @@ t = t + dt</textarea>
         try {
           const { assignments, requiredStartValues } = parseProgram();
           const initial = parseStartValues(requiredStartValues);
+          const resultTimeDisplayFractionDigits = getTimeDisplayFractionDigits(requiredStartValues);
           const iterations = getIterations();
           let values = { ...initial };
           const rows = [{ ...values }];
@@ -788,9 +970,11 @@ t = t + dt</textarea>
           }
 
           simulationRows = rows;
+          timeDisplayFractionDigits = resultTimeDisplayFractionDigits;
           referenceCurveCache.clear();
           tablePage = 0;
           startingValues = initial;
+          ensureDefaultGraph();
           resetChartZoom();
           refreshVariableOptions();
           renderChart();
@@ -862,9 +1046,16 @@ t = t + dt</textarea>
         row.append(ySelect, color, remove);
         seriesList.append(row);
         refreshVariableOptions();
-        if (settings.y) ySelect.value = settings.y;
+        if (settings.y && Array.from(ySelect.options).some((option) => option.value === settings.y)) {
+          ySelect.value = settings.y;
+        }
         updateRemoveButtons();
         renderChart();
+      }
+
+      function ensureDefaultGraph() {
+        if (seriesList.querySelector(".series-row")) return;
+        addGraph({ color: colorPalette[0] });
       }
 
       function refreshVariableOptions() {
@@ -874,30 +1065,38 @@ t = t + dt</textarea>
         } catch {
           for (const match of programInput.value.matchAll(/\b[A-Za-z_][A-Za-z0-9_]*\b/g)) names.add(match[0]);
         }
-        if (names.size === 0) names = new Set(["t", "s"]);
-
         const xSelect = $("#x-variable");
         const previousX = xSelect.value;
         xSelect.replaceChildren();
+        const emptyXOption = document.createElement("option");
+        emptyXOption.value = "";
+        emptyXOption.textContent = "";
+        xSelect.append(emptyXOption);
         for (const name of names) {
           const option = document.createElement("option");
           option.value = name;
           option.textContent = name;
           xSelect.append(option);
         }
-        xSelect.value = names.has(previousX) ? previousX : names.has("t") ? "t" : names.values().next().value;
+        xSelect.value = xVariableManuallySelected && names.has(previousX)
+          ? previousX
+          : names.has("t") ? "t" : names.has(previousX) ? previousX : names.values().next().value ?? "";
 
         seriesList.querySelectorAll(".series-row").forEach((row) => {
           const select = row.querySelector(".series-y");
           const previous = select.value;
           select.replaceChildren();
+          const emptyYOption = document.createElement("option");
+          emptyYOption.value = "";
+          emptyYOption.textContent = "";
+          select.append(emptyYOption);
           for (const name of names) {
             const option = document.createElement("option");
             option.value = name;
             option.textContent = name;
             select.append(option);
           }
-          select.value = names.has(previous) ? previous : names.has("s") ? "s" : names.values().next().value;
+          select.value = names.has(previous) ? previous : names.has("s") ? "s" : names.values().next().value ?? "";
         });
       }
 
@@ -934,7 +1133,7 @@ t = t + dt</textarea>
           input.setAttribute("aria-label", `Startwert für ${name}`);
           input.placeholder = "Wert";
           const draft = startValueDrafts.get(name);
-          input.value = draft ?? (name === "a" || name === "m" || name === "dt" ? "1" : "0");
+          input.value = draft ?? "0";
           label.htmlFor = input.id;
           label.textContent = name;
           input.addEventListener("input", () => {
@@ -1164,7 +1363,14 @@ t = t + dt</textarea>
       }
 
       function formatNumber(value) {
-        return new Intl.NumberFormat("de-DE", { maximumSignificantDigits: 4 }).format(value);
+        return new Intl.NumberFormat("de-DE", { maximumFractionDigits: 6 }).format(value);
+      }
+
+      function formatVariableNumber(value, variableName) {
+        if (variableName === "t") {
+          return new Intl.NumberFormat("de-DE", { maximumFractionDigits: timeDisplayFractionDigits }).format(value);
+        }
+        return formatNumber(value);
       }
 
       function hideChartHover() {
@@ -1218,7 +1424,7 @@ t = t + dt</textarea>
         marker.style.top = `${canvas.offsetTop + nearest.pixelY}px`;
         marker.style.setProperty("--marker-color", nearest.color);
         tooltip.style.setProperty("--tooltip-color", nearest.color);
-        tooltip.textContent = `${nearest.isReference ? "Referenz: " : ""}${nearest.yName}(${nearest.xName})\n${nearest.xName} = ${formatNumber(nearest.x)}\n${nearest.yName} = ${formatNumber(nearest.y)}`;
+        tooltip.textContent = `${nearest.isReference ? "Referenz: " : ""}${nearest.yName}(${nearest.xName})\n${nearest.xName} = ${formatVariableNumber(nearest.x, nearest.xName)}\n${nearest.yName} = ${formatVariableNumber(nearest.y, nearest.yName)}`;
 
         const left = canvas.offsetLeft + nearest.pixelX;
         const top = canvas.offsetTop + nearest.pixelY;
@@ -1266,7 +1472,7 @@ t = t + dt</textarea>
             row.append(step);
             for (const name of columns) {
               const cell = document.createElement("td");
-              cell.textContent = Number.isFinite(simulationRows[index][name]) ? formatNumber(simulationRows[index][name]) : "–";
+              cell.textContent = Number.isFinite(simulationRows[index][name]) ? formatVariableNumber(simulationRows[index][name], name) : "–";
               row.append(cell);
             }
             body.append(row);
@@ -1332,13 +1538,11 @@ t = t + dt</textarea>
         if (simulationRows.length === 0) {
           hideChartHover();
           setChartStatus("");
-          context.fillStyle = colors.label;
-          context.font = "15px system-ui, sans-serif";
-          context.textAlign = "center";
-          context.fillText("Starte die Simulation, um das Diagramm zu sehen.", width / 2, height / 2);
+          $("#chart-empty-hint").hidden = false;
           return;
         }
 
+        $("#chart-empty-hint").hidden = true;
         try {
           const settings = getGraphSettings();
           const series = settings.map((graph, index) => {
@@ -1442,7 +1646,7 @@ t = t + dt</textarea>
 
         const xTicks = axisTickSettings("x", xRange);
         const yTicks = axisTickSettings("y", yRange);
-        drawAxisGrid("x", xRange, xTicks, plot, colors);
+        drawAxisGrid("x", xRange, xTicks, plot, colors, (value) => formatVariableNumber(value, $("#x-variable").value));
         drawAxisGrid("y", yRange, yTicks, plot, colors);
 
         context.strokeStyle = colors.axis;
@@ -1469,7 +1673,7 @@ t = t + dt</textarea>
         drawAxisArrows(plot, colors.axis);
       }
 
-      function drawAxisGrid(axis, range, ticks, plot, colors) {
+      function drawAxisGrid(axis, range, ticks, plot, colors, formatTick = formatNumber) {
         const horizontal = axis === "y";
         const span = range.max - range.min;
         const firstMajor = Math.ceil(range.min / ticks.step) * ticks.step;
@@ -1512,13 +1716,13 @@ t = t + dt</textarea>
             context.lineTo(plot.right, position);
             context.stroke();
             context.textAlign = "right";
-            context.fillText(formatNumber(value), plot.left - 9, position + 4);
+            context.fillText(formatTick(value), plot.left - 9, position + 4);
           } else {
             context.moveTo(position, plot.top);
             context.lineTo(position, plot.bottom);
             context.stroke();
             context.textAlign = "center";
-            context.fillText(formatNumber(value), position, plot.bottom + 20);
+            context.fillText(formatTick(value), position, plot.bottom + 20);
           }
         }
         context.restore();
@@ -1684,10 +1888,12 @@ t = t + dt</textarea>
         }
 
         programInput.value = config.program;
+        if (!programFormula.hidden) renderProgramFormula();
         startValueDrafts = new Map(Object.entries(importedValues).map(([name, value]) => [name, String(value)]));
         refreshStartValueFields();
         refreshVariableOptions();
         $("#x-variable").value = importedX;
+        xVariableManuallySelected = true;
         $("#iterations").value = String(loops);
         $("#show-reference").checked = config.showReference;
         for (const axis of ["x", "y"]) {
@@ -1711,6 +1917,7 @@ t = t + dt</textarea>
         addGraph();
       });
       $("#x-variable").addEventListener("change", () => {
+        xVariableManuallySelected = true;
         resetChartZoom();
         renderChart();
       });
@@ -1745,10 +1952,21 @@ t = t + dt</textarea>
         document.querySelector('meta[name="theme-color"]').content = theme === "light" ? "#edf2f7" : "#0b1220";
         renderChart();
       });
+      programViewToggle.addEventListener("click", () => {
+        const showFormula = programFormula.hidden;
+        if (showFormula) renderProgramFormula();
+        programInput.hidden = showFormula;
+        programFormula.hidden = !showFormula;
+        programViewToggle.setAttribute("aria-pressed", String(showFormula));
+        programViewToggle.textContent = showFormula ? "Code bearbeiten" : "Formelansicht";
+        if (!showFormula) programInput.focus();
+      });
       programInput.addEventListener("input", () => {
         refreshStartValueFields();
         refreshVariableOptions();
+        ensureDefaultGraph();
         updatePrintSummary();
+        if (!programFormula.hidden) renderProgramFormula();
       });
       $("#iterations").addEventListener("input", updatePrintSummary);
       for (const axis of ["x", "y"]) {
@@ -1769,9 +1987,24 @@ t = t + dt</textarea>
         $(`#${axis}-subdivisions`).addEventListener("input", renderChart);
       }
 
-      $("#export-button").addEventListener("click", () => {
+      $("#export-button").addEventListener("click", async () => {
         try {
           const data = JSON.stringify(configForExport(), null, 2);
+          if (window.showSaveFilePicker) {
+            const fileHandle = await window.showSaveFilePicker({
+              suggestedName: "physik-simulation.json",
+              types: [{
+                description: "JSON-Datei",
+                accept: { "application/json": [".json"] },
+              }],
+            });
+            const writable = await fileHandle.createWritable();
+            await writable.write(data);
+            await writable.close();
+            setStatus("Programm wurde als JSON-Datei exportiert.", "success");
+            return;
+          }
+
           const url = URL.createObjectURL(new Blob([data], { type: "application/json" }));
           const link = document.createElement("a");
           link.href = url;
@@ -1782,9 +2015,87 @@ t = t + dt</textarea>
           setTimeout(() => URL.revokeObjectURL(url), 1000);
           setStatus("Programm wurde als JSON-Datei exportiert.", "success");
         } catch (error) {
+          if (error.name === "AbortError") return;
           setStatus(error.message || "Das Programm konnte nicht exportiert werden.", "error");
         }
       });
+
+      const downloadHtmlButton = $("#download-html-button");
+      if (downloadHtmlButton) {
+        downloadHtmlButton.addEventListener("click", (event) => {
+          event.preventDefault();
+          try {
+            const downloadableDocument = document.documentElement.cloneNode(true);
+            downloadableDocument.querySelector("#download-html-button").remove();
+            downloadableDocument.dataset.theme = "dark";
+            downloadableDocument.querySelector('meta[name="theme-color"]').setAttribute("content", "#0b1220");
+            const program = downloadableDocument.querySelector("#program");
+            program.value = "";
+            program.textContent = "";
+            const startValues = downloadableDocument.querySelector("#start-values");
+            const startValuesHint = document.createElement("span");
+            startValuesHint.className = "empty-start-values";
+            startValuesHint.textContent = "Für diesen Programmcode sind keine Startwerte erforderlich.";
+            startValues.replaceChildren(startValuesHint);
+            const defaultGraph = downloadableDocument.querySelector("#default-graph-template").content.cloneNode(true);
+            downloadableDocument.querySelector("#series-list").replaceChildren(defaultGraph);
+            downloadableDocument.querySelector("#x-variable").replaceChildren();
+            downloadableDocument.querySelector("#chart-empty-hint").hidden = false;
+            downloadableDocument.querySelector("#iterations").value = "1000";
+            downloadableDocument.querySelector("#iterations").setAttribute("value", "1000");
+            for (const selector of ["#x-min", "#x-max", "#x-tick-step", "#y-min", "#y-max", "#y-tick-step"]) {
+              const input = downloadableDocument.querySelector(selector);
+              input.value = "";
+              input.removeAttribute("value");
+            }
+            for (const selector of ["#x-mode", "#y-mode"]) {
+              const select = downloadableDocument.querySelector(selector);
+              for (const option of select.options) option.removeAttribute("selected");
+              select.options[0].setAttribute("selected", "");
+              select.value = "auto";
+            }
+            for (const selector of ["#x-subdivisions", "#y-subdivisions"]) {
+              const input = downloadableDocument.querySelector(selector);
+              input.value = "1";
+              input.setAttribute("value", "1");
+            }
+            const referenceToggle = downloadableDocument.querySelector("#show-reference");
+            referenceToggle.checked = false;
+            referenceToggle.removeAttribute("checked");
+            downloadableDocument.querySelector("#theme-slider").value = "0";
+            downloadableDocument.querySelector("#theme-slider").setAttribute("value", "0");
+            downloadableDocument.querySelector("#table-panel").hidden = true;
+            downloadableDocument.querySelector("#table-toggle").setAttribute("aria-expanded", "false");
+            downloadableDocument.querySelector("#table-head").replaceChildren();
+            downloadableDocument.querySelector("#table-body").replaceChildren();
+            downloadableDocument.querySelector("#table-page").textContent = "";
+            const status = downloadableDocument.querySelector("#status");
+            status.textContent = "";
+            status.removeAttribute("data-kind");
+            downloadableDocument.querySelector("#program").removeAttribute("hidden");
+            const formulaPreview = downloadableDocument.querySelector("#program-formula");
+            formulaPreview.hidden = true;
+            formulaPreview.replaceChildren();
+            const formulaToggle = downloadableDocument.querySelector("#program-view-toggle");
+            formulaToggle.textContent = "Formelansicht";
+            formulaToggle.setAttribute("aria-pressed", "false");
+            downloadableDocument.querySelectorAll(".footer-section").forEach((section) => section.remove());
+            downloadableDocument.querySelector(".footer-license").innerHTML =
+              'Umsetzung: Moritz Thauer – <a href="https://www.loessnitzgymnasium.de" target="_blank" rel="noopener noreferrer">Lößnitzgymnasium Radebeul</a>. Diese Simulation steht unter der <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.de" target="_blank" rel="noopener noreferrer">Creative-Commons-Lizenz CC BY-NC-SA 4.0</a>.';
+            const html = `<!doctype html>\n${downloadableDocument.outerHTML}`;
+            const url = URL.createObjectURL(new Blob([html], { type: "text/html" }));
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = "physik-simulation.html";
+            document.body.append(link);
+            link.click();
+            link.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+          } catch (error) {
+            setStatus(error.message || "Die HTML-Datei konnte nicht heruntergeladen werden.", "error");
+          }
+        });
+      }
 
       $("#import-button").addEventListener("click", () => $("#import-file").click());
       $("#import-file").addEventListener("change", async (event) => {
@@ -1824,10 +2135,10 @@ t = t + dt</textarea>
       window.addEventListener("resize", renderChart);
 
       refreshStartValueFields();
-      addGraph({ x: "t", y: "s", color: colorPalette[0] });
+      if (seriesList.querySelector("#default-graph-placeholder")) seriesList.replaceChildren();
+      ensureDefaultGraph();
       updateAxisControls();
       updatePrintSummary();
-      runSimulation();
     </script>
   </body>
 </html>
