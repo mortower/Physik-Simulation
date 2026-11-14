@@ -299,7 +299,7 @@
           <div class="two-columns">
             <div class="field">
               <label for="iterations">Wiederholungen</label>
-              <input id="iterations" type="number" min="1" max="10000" step="1" value="1000" />
+              <input id="iterations" type="number" min="1" max="1000000" step="1" value="1000" />
             </div>
           </div>
 
@@ -477,6 +477,8 @@
       const canvas = $("#chart");
       const context = canvas.getContext("2d");
       const colorPalette = ["#55c2ff", "#ff8f70", "#a88bff", "#59d99d", "#ffd166", "#ff70b8"];
+      const maxIterations = 1_000_000;
+      const maxChartHitTargets = 10_000;
       let simulationRows = [];
       let chartHitTargets = [];
       let chartPlotBounds = null;
@@ -950,8 +952,8 @@
 
       function getIterations() {
         const value = Number($("#iterations").value);
-        if (!Number.isInteger(value) || value < 1 || value > 10000) {
-          throw new Error("Die Anzahl der Wiederholungen muss eine ganze Zahl zwischen 1 und 10.000 sein.");
+        if (!Number.isInteger(value) || value < 1 || value > maxIterations) {
+          throw new Error("Die Anzahl der Wiederholungen muss eine ganze Zahl zwischen 1 und 1.000.000 sein.");
         }
         return value;
       }
@@ -1608,7 +1610,10 @@
             drawLine(graph.points, graph.color, mapX, mapY, false);
             if (graph.reference.length > 0) drawLine(graph.reference, graph.color, mapX, mapY, true);
             for (const [points, isReference] of [[graph.points, false], [graph.reference, true]]) {
-              for (const point of points) {
+              const hitTargetStride = Math.max(1, Math.ceil(points.length / maxChartHitTargets));
+              for (let pointIndex = 0; pointIndex < points.length; pointIndex += 1) {
+                if (pointIndex % hitTargetStride !== 0 && pointIndex !== points.length - 1) continue;
+                const point = points[pointIndex];
                 const pixelX = mapX(point.x);
                 const pixelY = mapY(point.y);
                 if (pixelX >= plot.left && pixelX <= plot.right && pixelY >= plot.top && pixelY <= plot.bottom) {
@@ -1869,7 +1874,7 @@
           }
         }
         const loops = Number(config.iterations);
-        if (!Number.isInteger(loops) || loops < 1 || loops > 10000) {
+        if (!Number.isInteger(loops) || loops < 1 || loops > maxIterations) {
           throw new Error("Die Programmdatei enthält eine ungültige Anzahl an Wiederholungen.");
         }
         if (!Array.isArray(config.graphs) || config.graphs.length < 1 || config.graphs.length > 12) {

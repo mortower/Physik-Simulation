@@ -27,7 +27,7 @@ t = t+dt
 
 Bedingte Zuweisungen haben die Form `if t < 5 then a = 0,3`. Unterstützt sind die Vergleiche `<`, `<=`, `>`, `>=`, `=`/`==` und `!=`. Zahlen dürfen ein Dezimalkomma oder einen Dezimalpunkt haben; auch Exponentialschreibweise ist möglich.
 
-Benötigte Startwerte werden aus dem Code ermittelt und als Eingabefelder angezeigt. Einen Startwert braucht eine Größe nur, wenn sie gelesen wird, bevor sie im aktuellen Schleifendurchlauf zugewiesen wurde. Im obigen Beispiel sind das `F`, `m`, `dt`, `v`, `s` und `t`. Die Anzahl der Wiederholungen ist von 1 bis 10.000 einstellbar. Fehler im Code, in Startwerten oder in Berechnungen werden in der Anwendung angezeigt.
+Benötigte Startwerte werden aus dem Code ermittelt und als Eingabefelder angezeigt. Einen Startwert braucht eine Größe nur, wenn sie gelesen wird, bevor sie im aktuellen Schleifendurchlauf zugewiesen wurde. Im obigen Beispiel sind das `F`, `m`, `dt`, `v`, `s` und `t`. Die Anzahl der Wiederholungen ist von 1 bis 1.000.000 einstellbar. Sehr große Simulationen können je nach Gerät mehr Zeit und Arbeitsspeicher benötigen. Fehler im Code, in Startwerten oder in Berechnungen werden in der Anwendung angezeigt.
 
 Erlaubt sind Zahlen, Variablen, Klammern sowie `+`, `-`, `*`, `/` und `^`. Multiplikation kann auch ohne `*` geschrieben werden, zum Beispiel `a/2 dt^2`. Außerdem gibt es `sin()`, `cos()`, `tan()`, `sqrt()` sowie die Konstanten `pi` und `e`. Trigonometrische Funktionen erwarten Winkel im Bogenmaß. Der Code wird als eingeschränkte Formelsprache ausgewertet, nicht als JavaScript. Mit „Formelansicht“ lässt sich gültiger Code zusätzlich in mathematischer Schreibweise mit Hoch- und Tiefstellungen anzeigen.
 
