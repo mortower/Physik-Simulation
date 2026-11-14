@@ -1,10 +1,54 @@
 # Physik-Simulation
-Alternative zu Möbius Physik LK
 
-## Formellabor
+Eine browserbasierte Physik-Simulation als Alternative zu Möbius für den Physik-Leistungskurs.
 
-Öffne `index.html` im Browser oder starte im Projektordner `python3 -m http.server 8000` und rufe `http://localhost:8000` auf.
+## Starten
 
-Im Formellabor kannst du den Ablauf mit einer Zuweisung pro Zeile beschreiben. Dezimalzahlen funktionieren sowohl mit Komma als auch mit Punkt, zum Beispiel `0,3` oder `0.3`. Bedingte Zuweisungen haben die Form `if t < 5 then a = 0,3`; unterstützt sind `<`, `<=`, `>`, `>=`, `=`/`==` und `!=`. Die benötigten Startwerte werden während der Eingabe automatisch erkannt – auch wenn eine Formel gerade noch unvollständig ist. Eine Variable braucht nur dann einen Startwert, wenn sie gelesen wird, bevor sie im aktuellen Schleifendurchlauf zugewiesen wurde. Bei `F = a/m`, `dv = a*dt`, `v = v+dv`, `t = t+dt` sind das `a`, `m`, `dt`, `v` und `t` – nicht `F` oder `dv`. Erlaubt sind Zahlen, Variablen, Klammern, `+`, `-`, `*`, `/`, `^`, `sin()`, `cos()`, `tan()`, `sqrt()` sowie die Konstanten `pi` und `e`. Trigonometrische Funktionen erwarten Winkel im Bogenmaß. Multiplikation darf auch ohne `*` geschrieben werden, zum Beispiel `a/2 dt^2`. Der eingegebene Text wird als eingeschränkte Formelsprache ausgewertet, nicht als JavaScript. Über „Formelansicht“ kannst du den Code zusätzlich mit mathematischer Schreibweise wie Hoch- und Tiefstellungen betrachten. `pi` und `e` werden intern mit voller Rechengenauigkeit verwendet; Tabellen-, Tooltip- und Achsenwerte werden für die Anzeige auf höchstens sechs Nachkommastellen gerundet. Die Zeitvariable `t` wird passend zur Genauigkeit des eingegebenen Zeitschritts `dt` angezeigt. Die Rundung betrifft nur die Darstellung, nicht die Berechnung.
+Öffne `index.html` direkt im Browser oder starte im Projektordner einen lokalen Webserver:
 
-Nach dem Start wählst du eine gemeinsame X-Größe und kannst mehrere Y-Größen mit eigenen Farben darstellen. Bei manueller Skalierung einer Achse wird die andere automatische Achse anhand der im gewählten Bereich sichtbaren Messpunkte neu skaliert. Hauptstrich-Abstand und Unterteilungen lassen sich für beide Achsen einstellen. Mit dem Mausrad kannst du im Diagramm um die Zeigerposition zoomen; der weiteste Zoom-out entspricht der eingestellten Achsenskalierung. Im gezoomten Diagramm kannst du den Ausschnitt mit gedrückter Maustaste verschieben. Die automatische Skalierung schließt den Ursprung ein; wenn null im Achsenbereich liegt, werden die Achsen dort gezeichnet. Bewege die Maus nahe an einen Messpunkt, um dessen Werte anzuzeigen. Über „Tabelle“ lässt sich zusätzlich eine seitenweise Wertetabelle öffnen. Im Darkmode startet die Seite standardmäßig; der Schieberegler wechselt unabhängig von den Systemeinstellungen zum hellen Normalmodus. Die Referenzkurve führt denselben Programmcode mit kleineren `dt`-Schritten erneut aus und kann für alle ausgewählten Variablen angezeigt werden. Pro Simulationsschritt wird `dt` bis zu 10.000-mal geteilt; die Gesamtzahl interner Teilschritte ist auf 1.000.000 und die gezeichnete Referenz auf 10.000 Punkte begrenzt, damit lange Simulationen handhabbar bleiben. Die Simulation wird durchgezogen in ihrer Graphenfarbe, die Referenz gestrichelt in einer Kontrastfarbe dargestellt. Programme werden einschließlich Diagramm- und Skalierungseinstellungen als JSON-Datei exportiert und wieder importiert. Die Druckansicht enthält Felder für Name, Kurs und Thema sowie automatisch aktuelles Datum/Uhrzeit. Der übrige Ausdruck ist schwarz-weiß; die Graphen behalten ihre Farben.
+```bash
+python3 -m http.server 8000
+```
+
+Rufe anschließend `http://localhost:8000` auf. Die Anwendung benötigt keine Installation.
+
+## Simulationscode und Startwerte
+
+Der Simulationscode besteht aus einer Zuweisung pro Zeile. Jede Wiederholung führt die Zeilen der Reihe nach aus; ein späterer Wert kann daher in derselben Wiederholung bereits berechnete Größen verwenden. Zeilen können mit `#` kommentiert werden. Zum Beispiel:
+
+```text
+a = F/m
+ds = v*dt
+dv = a*dt
+v = v+dv
+s = s+ds
+t = t+dt
+```
+
+Bedingte Zuweisungen haben die Form `if t < 5 then a = 0,3`. Unterstützt sind die Vergleiche `<`, `<=`, `>`, `>=`, `=`/`==` und `!=`. Zahlen dürfen ein Dezimalkomma oder einen Dezimalpunkt haben; auch Exponentialschreibweise ist möglich.
+
+Benötigte Startwerte werden aus dem Code ermittelt und als Eingabefelder angezeigt. Einen Startwert braucht eine Größe nur, wenn sie gelesen wird, bevor sie im aktuellen Schleifendurchlauf zugewiesen wurde. Im obigen Beispiel sind das `F`, `m`, `dt`, `v`, `s` und `t`. Die Anzahl der Wiederholungen ist von 1 bis 10.000 einstellbar. Fehler im Code, in Startwerten oder in Berechnungen werden in der Anwendung angezeigt.
+
+Erlaubt sind Zahlen, Variablen, Klammern sowie `+`, `-`, `*`, `/` und `^`. Multiplikation kann auch ohne `*` geschrieben werden, zum Beispiel `a/2 dt^2`. Außerdem gibt es `sin()`, `cos()`, `tan()`, `sqrt()` sowie die Konstanten `pi` und `e`. Trigonometrische Funktionen erwarten Winkel im Bogenmaß. Der Code wird als eingeschränkte Formelsprache ausgewertet, nicht als JavaScript. Mit „Formelansicht“ lässt sich gültiger Code zusätzlich in mathematischer Schreibweise mit Hoch- und Tiefstellungen anzeigen.
+
+## Diagramm und Auswertung
+
+Nach einer erfolgreichen Simulation:
+
+- Wähle eine gemeinsame Größe für die x-Achse und bis zu 12 Größen für die y-Achse. Für jeden Graphen lassen sich Farbe und y-Größe separat einstellen.
+- Die Achsen können automatisch oder manuell skaliert werden. Bei manueller Skalierung lassen sich Minimum und Maximum festlegen. Ist nur eine Achse manuell eingestellt, wird die automatische Skalierung der anderen Achse anhand der im gewählten Bereich sichtbaren Messpunkte berechnet.
+- Für beide Achsen sind der Abstand der Hauptstriche und die Anzahl der Unterteilungen pro Abschnitt einstellbar. Ohne eigenen Hauptstrich-Abstand wird ein passender Wert gewählt. Die automatische Skalierung schließt den Ursprung ein; liegt null im Achsenbereich, werden die Achsen auch bei null gezeichnet.
+- Zoome mit dem Mausrad um die Zeigerposition. Der Zoom-out führt zurück zur eingestellten Achsenskalierung. Verschiebe einen gezoomten Ausschnitt mit gedrückter Maustaste.
+- Bewege den Zeiger im Diagramm nahe an einen Messpunkt, um die zugehörigen x- und y-Werte anzuzeigen.
+- Öffne „Tabelle“ für eine seitenweise Tabelle aller berechneten Größen. Die Tabelle zeigt bis zu 50 Messpunkte pro Seite.
+- Aktiviere optional die Referenzkurve, um denselben Programmcode mit kleineren `dt`-Schritten erneut auszuführen. Sie kann für die ausgewählten Graphen angezeigt werden und erscheint gestrichelt in einer Kontrastfarbe. Pro Simulationsschritt wird `dt` bis zu 10.000-mal geteilt; die Gesamtzahl interner Teilschritte ist auf 1.000.000 und die Referenzkurve auf 10.000 Punkte begrenzt.
+
+## Programme speichern und drucken
+
+- „Programm exportieren“ speichert Code, Startwerte, Wiederholungen sowie Graphen-, Referenzkurven- und Achseneinstellungen als JSON-Datei. „Programm importieren“ lädt eine solche Datei und führt die Simulation mit den gespeicherten Einstellungen aus.
+- „Simulation herunterladen“ erzeugt eine eigenständige HTML-Datei. Sie enthält die Anwendung, startet aber mit einem leeren Programm und Standardeinstellungen und kann separat im Browser geöffnet werden.
+- „Drucken“ und „Diagramm drucken“ öffnen die Druckansicht mit Diagramm, Feldern für Name, Kurs und Thema, aktuellem Datum und Uhrzeit sowie Simulationscode, Startwerten und Wiederholungszahl. Die Druckansicht ist ansonsten schwarz-weiß; Graphen behalten ihre Farben.
+
+## Darstellung und Datenschutz
+
+Die Seite startet im Darkmode. Über den Regler oben lässt sich unabhängig von den Systemeinstellungen zum hellen Normalmodus wechseln. Die Seite speichert keine personenbezogenen Daten; laut Datenschutzhinweis protokolliert der Hosting-Provider technische Zugriffsdaten.
