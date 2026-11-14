@@ -464,7 +464,7 @@
           </p>
         </details>
       </div>
-      <p class="footer-license">Umsetzung: Moritz Thauer – <a href="https://www.loessnitzgymnasium.de" target="_blank" rel="noopener noreferrer">Lößnitzgymnasium Radebeul</a>. Diese Seite steht unter der <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.de" target="_blank" rel="noopener noreferrer">Creative-Commons-Lizenz CC BY-NC-SA 4.0</a>.</p>
+      <p class="footer-license">Umsetzung: Moritz Thauer – E-Mail: <a href="mailto:moritz.thauer@loegy.lernsax.de">moritz.thauer@loegy.lernsax.de</a> – <a href="https://www.loessnitzgymnasium.de" target="_blank" rel="noopener noreferrer">Lößnitzgymnasium Radebeul</a>. Diese Seite steht unter der <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.de" target="_blank" rel="noopener noreferrer">Creative-Commons-Lizenz CC BY-NC-SA 4.0</a>.</p>
     </footer>
 
     <script>
@@ -663,6 +663,12 @@
         return element;
       }
 
+      function createMathSpace() {
+        const space = createMathElement("mspace");
+        space.setAttribute("width", "0.5em");
+        return space;
+      }
+
       function renderMathVariable(name) {
         const separator = name.indexOf("_");
         if (separator <= 0 || separator === name.length - 1) return createMathToken("mi", name);
@@ -790,9 +796,12 @@
             const row = createMathElement("mrow");
             if (assignment.condition) {
               row.append(
-                createMathToken("mtext", "falls "),
+                createMathToken("mtext", "if"),
+                createMathSpace(),
                 renderMathExpression(assignment.condition),
-                createMathToken("mo", ":")
+                createMathSpace(),
+                createMathToken("mtext", "then"),
+                createMathSpace()
               );
             }
             row.append(
@@ -2081,7 +2090,7 @@
             formulaToggle.setAttribute("aria-pressed", "false");
             downloadableDocument.querySelectorAll(".footer-section").forEach((section) => section.remove());
             downloadableDocument.querySelector(".footer-license").innerHTML =
-              'Umsetzung: Moritz Thauer – <a href="https://www.loessnitzgymnasium.de" target="_blank" rel="noopener noreferrer">Lößnitzgymnasium Radebeul</a>. Diese Simulation steht unter der <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.de" target="_blank" rel="noopener noreferrer">Creative-Commons-Lizenz CC BY-NC-SA 4.0</a>.';
+              'Umsetzung: Moritz Thauer – E-Mail: <a href="mailto:moritz.thauer@loegy.lernsax.de">moritz.thauer@loegy.lernsax.de</a> – <a href="https://www.loessnitzgymnasium.de" target="_blank" rel="noopener noreferrer">Lößnitzgymnasium Radebeul</a>. Diese Simulation steht unter der <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.de" target="_blank" rel="noopener noreferrer">Creative-Commons-Lizenz CC BY-NC-SA 4.0</a>.';
             const html = `<!doctype html>\n${downloadableDocument.outerHTML}`;
             const url = URL.createObjectURL(new Blob([html], { type: "text/html" }));
             const link = document.createElement("a");
