@@ -642,7 +642,7 @@
           names.add(target);
           collectVariables(expression, names);
           if (condition) collectVariables(condition, names);
-          else assignedBefore.add(target);
+          assignedBefore.add(target);
         });
 
         if (assignments.length === 0) throw new Error("Bitte gib mindestens eine Zuweisung ein.");
@@ -842,7 +842,7 @@
             const name = match[0];
             if (!reservedNames.has(name) && !assignedBefore.has(name)) requiredStartValues.add(name);
           }
-          if (assignment && !conditional) assignedBefore.add(assignment[1]);
+          if (assignment) assignedBefore.add(assignment[1]);
         }
 
         return requiredStartValues;
