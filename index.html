@@ -1190,7 +1190,7 @@
           || assignments.some((assignment) => assignment.target === "dt");
         const maxReferenceWork = 1_000_000;
         const maxSubstepsPerIteration = 10_000;
-        const maxReferencePoints = 10_000;
+        const maxReferencePoints = 1_000_000;
         const substeps = hasTimeStep
           ? Math.min(
             maxSubstepsPerIteration,
@@ -1238,8 +1238,12 @@
       }
 
       function automaticRange(values) {
-        const dataMin = Math.min(...values);
-        const dataMax = Math.max(...values);
+        let dataMin = Infinity;
+        let dataMax = -Infinity;
+        for (const value of values) {
+          dataMin = Math.min(dataMin, value);
+          dataMax = Math.max(dataMax, value);
+        }
         const min = Math.min(0, dataMin);
         const max = Math.max(0, dataMax);
         if (min === max) return { min: 0, max: 1 };
@@ -1375,9 +1379,10 @@
         return new Intl.NumberFormat("de-DE", { maximumFractionDigits: 6 }).format(value);
       }
 
-      function formatVariableNumber(value, variableName) {
+      function formatVariableNumber(value, variableName, isReference = false) {
         if (variableName === "t") {
-          return new Intl.NumberFormat("de-DE", { maximumFractionDigits: timeDisplayFractionDigits }).format(value);
+          const maximumFractionDigits = isReference ? 15 : timeDisplayFractionDigits;
+          return new Intl.NumberFormat("de-DE", { maximumFractionDigits }).format(value);
         }
         return formatNumber(value);
       }
@@ -1433,7 +1438,7 @@
         marker.style.top = `${canvas.offsetTop + nearest.pixelY}px`;
         marker.style.setProperty("--marker-color", nearest.color);
         tooltip.style.setProperty("--tooltip-color", nearest.color);
-        tooltip.textContent = `${nearest.isReference ? "Referenz: " : ""}${nearest.yName}(${nearest.xName})\n${nearest.xName} = ${formatVariableNumber(nearest.x, nearest.xName)}\n${nearest.yName} = ${formatVariableNumber(nearest.y, nearest.yName)}`;
+        tooltip.textContent = `${nearest.isReference ? "Referenz: " : ""}${nearest.yName}(${nearest.xName})\n${nearest.xName} = ${formatVariableNumber(nearest.x, nearest.xName, nearest.isReference)}\n${nearest.yName} = ${formatVariableNumber(nearest.y, nearest.yName, nearest.isReference)}`;
 
         const left = canvas.offsetLeft + nearest.pixelX;
         const top = canvas.offsetTop + nearest.pixelY;

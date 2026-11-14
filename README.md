@@ -41,7 +41,7 @@ Nach einer erfolgreichen Simulation:
 - Zoome mit dem Mausrad um die Zeigerposition. Der Zoom-out führt zurück zur eingestellten Achsenskalierung. Verschiebe einen gezoomten Ausschnitt mit gedrückter Maustaste.
 - Bewege den Zeiger im Diagramm nahe an einen Messpunkt, um die zugehörigen x- und y-Werte anzuzeigen.
 - Öffne „Tabelle“ für eine seitenweise Tabelle aller berechneten Größen. Die Tabelle zeigt bis zu 50 Messpunkte pro Seite.
-- Aktiviere optional die Referenzkurve, um denselben Programmcode mit kleineren `dt`-Schritten erneut auszuführen. Sie kann für die ausgewählten Graphen angezeigt werden und erscheint gestrichelt in einer Kontrastfarbe. Pro Simulationsschritt wird `dt` bis zu 10.000-mal geteilt; die Gesamtzahl interner Teilschritte ist auf 1.000.000 und die Referenzkurve auf 10.000 Punkte begrenzt.
+- Aktiviere optional die Referenzkurve, um denselben Programmcode mit kleineren `dt`-Schritten erneut auszuführen. Sie kann für die ausgewählten Graphen angezeigt werden und erscheint gestrichelt in einer Kontrastfarbe. Pro Simulationsschritt wird `dt` bis zu 10.000-mal geteilt; sowohl die Gesamtzahl interner Teilschritte als auch die Zahl der Referenzpunkte ist auf 1.000.000 begrenzt. Eine sehr große Referenzkurve kann die Darstellung im Browser verlangsamen.
 
 ## Programme speichern und drucken
 
