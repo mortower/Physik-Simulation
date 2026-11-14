@@ -1381,6 +1381,16 @@
         return new Intl.NumberFormat("de-DE", { maximumFractionDigits: 6 }).format(value);
       }
 
+      function formatAxisNumber(value) {
+        if (Math.abs(value) < 10_000_000) return formatNumber(value);
+        const [coefficient, exponent] = value.toExponential(2).split("e");
+        const superscriptDigits = { "-": "⁻", "0": "⁰", "1": "¹", "2": "²", "3": "³", "4": "⁴", "5": "⁵", "6": "⁶", "7": "⁷", "8": "⁸", "9": "⁹" };
+        const superscriptExponent = [...String(Number(exponent))]
+          .map((digit) => superscriptDigits[digit])
+          .join("");
+        return `${formatNumber(Number(coefficient))} × 10${superscriptExponent}`;
+      }
+
       function formatVariableNumber(value, variableName, isReference = false) {
         if (variableName === "t") {
           const maximumFractionDigits = isReference ? 15 : timeDisplayFractionDigits;
@@ -1665,8 +1675,8 @@
 
         const xTicks = axisTickSettings("x", xRange);
         const yTicks = axisTickSettings("y", yRange);
-        drawAxisGrid("x", xRange, xTicks, plot, colors, (value) => formatVariableNumber(value, $("#x-variable").value));
-        drawAxisGrid("y", yRange, yTicks, plot, colors);
+        drawAxisGrid("x", xRange, xTicks, plot, colors, formatAxisNumber);
+        drawAxisGrid("y", yRange, yTicks, plot, colors, formatAxisNumber);
 
         context.strokeStyle = colors.axis;
         context.beginPath();
