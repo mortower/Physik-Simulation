@@ -241,7 +241,6 @@
         .chart-wrap { border: 1px solid #777; background: #fff; }
         #chart-status { display: none; }
         .legend { color: #000; }
-        canvas { height: 390px; }
         .print-summary { display: grid !important; visibility: visible !important; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px; page-break-inside: avoid; }
         .print-summary section { border: 1px solid #777; border-radius: 5px; padding: 9px; }
         .print-identification { display: block !important; margin: 0 0 10px; padding: 5px 0 10px; }
@@ -253,6 +252,15 @@
         .print-summary pre { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; font: 8pt/1.35 ui-monospace, monospace; }
         .print-summary p { margin: 0; white-space: pre-wrap; font: 8pt/1.4 ui-monospace, monospace; }
         * { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+      }
+
+      @media print and (orientation: landscape) {
+        canvas { height: 520px; }
+        .print-summary { page-break-before: always; break-before: page; }
+      }
+
+      @media print and (orientation: portrait) {
+        canvas { height: 390px; }
       }
     </style>
   </head>
