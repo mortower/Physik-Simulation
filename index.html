@@ -376,7 +376,7 @@
                   <select class="series-y" aria-label="Graph 1: Größe auf der y-Achse">
                     <option value=""></option>
                   </select>
-                  <input type="color" value="#55c2ff" aria-label="Farbe für Graph 1" />
+                  <input type="color" value="#0000ff" aria-label="Farbe für Graph 1" />
                   <button class="remove-series" type="button" disabled title="Graph entfernen" aria-label="Graph entfernen">×</button>
                 </div>
               </template>
@@ -484,7 +484,10 @@
       const seriesList = $("#series-list");
       const canvas = $("#chart");
       const context = canvas.getContext("2d");
-      const colorPalette = ["#55c2ff", "#ff8f70", "#a88bff", "#59d99d", "#ffd166", "#ff70b8"];
+      const colorPalette = [
+        "#0000ff", "#ff0000", "#00ff00", "#ffff00", "#00ffff", "#ff00ff",
+        "#ff8000", "#8000ff", "#00a080", "#ff4080", "#808000", "#0080ff"
+      ];
       const maxIterations = 1_000_000;
       const maxChartHitTargets = 10_000;
       let simulationRows = [];
